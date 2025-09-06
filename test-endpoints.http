@@ -1,0 +1,44 @@
+# ERP API - User CRUD Operations
+
+## Base URL
+http://localhost:5162
+
+## Endpoints
+
+### 1. Get All Users
+GET {{base}}/api/auth/users
+Content-Type: application/json
+
+### 2. Get User by ID
+GET {{base}}/api/auth/users/{{userId}}
+Content-Type: application/json
+
+### 3. Create User
+POST {{base}}/api/auth/users
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "password": "password123",
+    "image": "profile.jpg",
+    "phone": "+1234567890",
+    "typeUser": "Admin"
+}
+
+### 4. Update User
+PUT {{base}}/api/auth/users/{{userId}}
+Content-Type: application/json
+
+{
+    "image": "new-profile.jpg",
+    "phone": "+0987654321",
+    "typeUser": "User"
+}
+
+### 5. Delete User
+DELETE {{base}}/api/auth/users/{{userId}}
+Content-Type: application/json
+
+# Variables
+@base = http://localhost:5162
+@userId = 00000000-0000-0000-0000-000000000000

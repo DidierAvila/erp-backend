@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="DTOs\Auth\" />
+    <Folder Include="Entities\Finance\" />
+    <Folder Include="Entities\Inventory\" />
+    <Folder Include="Entities\Sales\" />
+    <Folder Include="Entities\Purchases\" />
+    <Folder Include="Validators\" />
+  </ItemGroup>
+
+</Project>
