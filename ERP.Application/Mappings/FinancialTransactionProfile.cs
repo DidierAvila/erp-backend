@@ -10,7 +10,7 @@ namespace ERP.Application.Mappings
         {
             // Entity to DTO mappings
             CreateMap<FinancialTransaction, FinancialTransactionDto>()
-                .ForMember(dest => dest.AccountType, opt => opt.MapFrom(src => src.Account != null ? src.Account.Type : null));
+                .ForMember(dest => dest.AccountType, opt => opt.MapFrom(src => src.Account != null ? src.Account.AccountType : null));
 
             // DTO to Entity mappings
             CreateMap<CreateFinancialTransactionDto, FinancialTransaction>();

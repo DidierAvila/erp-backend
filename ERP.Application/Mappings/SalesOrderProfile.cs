@@ -10,7 +10,7 @@ namespace ERP.Application.Mappings
         {
             // Entity to DTO mappings
             CreateMap<SalesOrder, SalesOrderDto>()
-                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.CompanyName : null))
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : null))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.SalesOrderItems));
 
             // SalesOrderItem to SalesOrderItemDto mapping
@@ -36,7 +36,7 @@ namespace ERP.Application.Mappings
 
             // Summary DTO mapping
             CreateMap<SalesOrder, SalesOrderSummaryDto>()
-                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.CompanyName : "Unknown"))
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : "Unknown"))
                 .ForMember(dest => dest.ItemCount, opt => opt.MapFrom(src => src.SalesOrderItems != null ? src.SalesOrderItems.Count : 0));
         }
     }

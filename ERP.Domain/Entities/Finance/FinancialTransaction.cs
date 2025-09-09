@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using ERP.Domain.Entities;
-
 namespace ERP.Domain.Entities.Finance;
 
 public partial class FinancialTransaction

@@ -6,7 +6,7 @@ namespace ERP.Application.Core.Sales.Queries.Handlers
     {
         Task<SalesOrderDto?> GetSalesOrderById(int id, CancellationToken cancellationToken);
         Task<IEnumerable<SalesOrderDto>> GetAllSalesOrders(CancellationToken cancellationToken);
-        Task<IEnumerable<SalesOrderDto>> GetSalesOrdersByCustomer(int customerId, CancellationToken cancellationToken);
+        Task<IEnumerable<SalesOrderDto>> GetSalesOrdersByCustomer(Guid customerId, CancellationToken cancellationToken);
         Task<IEnumerable<SalesOrderDto>> GetSalesOrdersByStatus(string status, CancellationToken cancellationToken);
     }
 }

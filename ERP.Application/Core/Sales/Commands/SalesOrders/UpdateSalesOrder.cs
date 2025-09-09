@@ -19,7 +19,7 @@ namespace ERP.Application.Core.Sales.Commands.SalesOrders
         public async Task<SalesOrderDto> HandleAsync(int id, UpdateSalesOrderDto updateSalesOrderDto, CancellationToken cancellationToken)
         {
             // Validations
-            if (updateSalesOrderDto.CustomerId <= 0)
+            if (updateSalesOrderDto.CustomerId == Guid.Empty)
                 throw new ArgumentException("Customer ID is required");
 
             if (string.IsNullOrWhiteSpace(updateSalesOrderDto.Status))

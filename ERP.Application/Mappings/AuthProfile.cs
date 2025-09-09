@@ -1,6 +1,7 @@
 using AutoMapper;
 using ERP.Domain.DTOs.Auth;
 using ERP.Domain.Entities;
+using ERP.Domain.Entities.Auth;
 
 namespace ERP.Application.Mappings
 {

@@ -148,7 +148,7 @@ namespace ERP.API.Controllers.Sales
 
         [HttpGet("customer/{customerId}")]
         [ProducesResponseType(typeof(IEnumerable<SalesOrderDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<SalesOrderDto>>> GetSalesOrdersByCustomer(int customerId)
+        public async Task<ActionResult<IEnumerable<SalesOrderDto>>> GetSalesOrdersByCustomer(Guid customerId)
         {
             try
             {

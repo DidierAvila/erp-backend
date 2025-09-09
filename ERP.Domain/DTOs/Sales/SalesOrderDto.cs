@@ -4,7 +4,7 @@ namespace ERP.Domain.DTOs.Sales
     {
         public int Id { get; set; }
         public DateOnly OrderDate { get; set; }
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
         public string? CustomerName { get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } = null!;
@@ -13,14 +13,14 @@ namespace ERP.Domain.DTOs.Sales
 
     public class CreateSalesOrderDto
     {
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
         public string Status { get; set; } = null!;
         public List<CreateSalesOrderItemDto> Items { get; set; } = new();
     }
 
     public class UpdateSalesOrderDto
     {
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
         public string Status { get; set; } = null!;
         public List<UpdateSalesOrderItemDto>? Items { get; set; }
     }

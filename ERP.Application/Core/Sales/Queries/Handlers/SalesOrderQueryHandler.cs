@@ -32,7 +32,7 @@ namespace ERP.Application.Core.Sales.Queries.Handlers
             return await _getAllSalesOrders.HandleAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<SalesOrderDto>> GetSalesOrdersByCustomer(int customerId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<SalesOrderDto>> GetSalesOrdersByCustomer(Guid customerId, CancellationToken cancellationToken)
         {
             return await _getSalesOrdersByCustomer.HandleAsync(customerId, cancellationToken);
         }

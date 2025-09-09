@@ -16,7 +16,7 @@ namespace ERP.Application.Core.Sales.Queries.SalesOrders
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<SalesOrderDto>> HandleAsync(int customerId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<SalesOrderDto>> HandleAsync(Guid customerId, CancellationToken cancellationToken)
         {
             var salesOrders = await _salesOrderRepository.Finds(
                 x => x.CustomerId == customerId, 

@@ -1,5 +1,4 @@
 ﻿using ERP.Domain.Entities;
-using ERP.Domain.Entities.App;
 using ERP.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,21 +15,21 @@ public partial class ErpDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Account> Accounts { get; set; }
+    public virtual DbSet<ERP.Domain.Entities.Account> AuthAccounts { get; set; }
 
-    public virtual DbSet<Advisor> Advisors { get; set; }
-
-    public virtual DbSet<Assistant> Assistants { get; set; }
-
-    public virtual DbSet<Customer> Customers { get; set; }
+    public virtual DbSet<ERP.Domain.Entities.Finance.Account> FinanceAccounts { get; set; }
 
     public virtual DbSet<Permission> Permissions { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<RolePermission> RolePermissions { get; set; }
+
     public virtual DbSet<Session> Sessions { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserTypes> UserTypes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -85,128 +84,6 @@ public partial class ErpDbContext : DbContext
                 .HasConstraintName("FK__Accounts__UserId__3F466844");
         });
 
-        modelBuilder.Entity<Advisor>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Advisors__3213E83FBDE3B613");
-
-            entity.ToTable("Advisors", "App");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("Id");
-            entity.Property(e => e.Certifications)
-                .HasColumnType("text")
-                .HasColumnName("Certifications");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("CreatedAt");
-            entity.Property(e => e.LastName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("LastName");
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("Name");
-            entity.Property(e => e.Phone)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("Phone");
-            entity.Property(e => e.Specialization)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("Specialization");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("UpdatedAt");
-
-            entity.HasOne(d => d.IdNavigation).WithOne(p => p.Advisor)
-                .HasForeignKey<Advisor>(d => d.Id)
-                .HasConstraintName("FK__Advisors__Id__5BE2A6F2");
-        });
-
-        modelBuilder.Entity<Assistant>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Assistants__3213E83FCC772FB1");
-
-            entity.ToTable("Assistants", "App");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("Id");
-            entity.Property(e => e.AssignedToConsultant).HasColumnName("AssignedToConsultant");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("CreatedAt");
-            entity.Property(e => e.LastName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("LastName");
-            entity.Property(e => e.Name)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("Name");
-            entity.Property(e => e.Phone)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("Phone");
-            entity.Property(e => e.StartDate).HasColumnName("StartDate");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("UpdatedAt");
-
-            entity.HasOne(d => d.IdNavigation).WithOne(p => p.Assistant)
-                .HasForeignKey<Assistant>(d => d.Id)
-                .HasConstraintName("FK__Assistants__Id__6477ECF3");
-        });
-
-        modelBuilder.Entity<Customer>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Customers__3213E83FD08F52F3");
-
-            entity.ToTable("Customers", "App");
-
-            entity.HasIndex(e => e.NitId, "UQ__Customers__1DF2B8DD9565B3E4").IsUnique();
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("Id");
-            entity.Property(e => e.Address)
-                .HasColumnType("text")
-                .HasColumnName("Address");
-            entity.Property(e => e.CompanyName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("CompanyName");
-            entity.Property(e => e.ContactPerson)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("ContactPerson");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("CreatedAt");
-            entity.Property(e => e.Industry)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("Industry");
-            entity.Property(e => e.NitId)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("NitId");
-            entity.Property(e => e.NumberEmployees).HasColumnName("NumberEmployees");
-            entity.Property(e => e.PhoneNumber)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("PhoneNumber");
-            entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("UpdatedAt");
-
-            entity.HasOne(d => d.IdNavigation).WithOne(p => p.Customer)
-                .HasForeignKey<Customer>(d => d.Id)
-                .HasConstraintName("FK__Customers__Id__571DF1D5");
-        });
-
         modelBuilder.Entity<Permission>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Permissions__3213E83F8986953C");
@@ -225,6 +102,17 @@ public partial class ErpDbContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("Name");
+            entity.Property(e => e.Status)
+                .HasDefaultValue(true)
+                .HasColumnName("Status");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("CreatedAt");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("UpdatedAt");
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -243,22 +131,8 @@ public partial class ErpDbContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("Name");
 
-            entity.HasMany(d => d.Permissions).WithMany(p => p.Roles)
-                .UsingEntity<Dictionary<string, object>>(
-                    "RolePermission",
-                    r => r.HasOne<Permission>().WithMany()
-                        .HasForeignKey("PermissionId")
-                        .HasConstraintName("FK__RolePermissions__PermissionId__534D60F1"),
-                    l => l.HasOne<Role>().WithMany()
-                        .HasForeignKey("RoleId")
-                        .HasConstraintName("FK__RolePermissions__RoleId__52593CB8"),
-                    j =>
-                    {
-                        j.HasKey("RoleId", "PermissionId").HasName("PK__RolePermissions__C85A54633606CB73");
-                        j.ToTable("RolePermissions", "Auth");
-                        j.IndexerProperty<Guid>("RoleId").HasColumnName("RoleId");
-                        j.IndexerProperty<Guid>("PermissionId").HasColumnName("PermissionId");
-                    });
+            // Relación configurada através de la entidad RolePermission explícita
+            // No necesitamos configuración muchos-a-muchos automática
         });
 
         modelBuilder.Entity<Session>(entity =>
@@ -315,13 +189,20 @@ public partial class ErpDbContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("Phone");
-            entity.Property(e => e.TypeUser)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("TypeUser");
+            entity.Property(e => e.UserTypeId)
+                .HasColumnName("UserTypeId");
+            entity.Property(e => e.ExtraData)
+                .HasColumnType("nvarchar(max)")
+                .HasColumnName("ExtraData")
+                .HasDefaultValue("{}");
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("UpdatedAt");
+
+            entity.HasOne(d => d.UserType).WithMany(p => p.Users)
+                .HasForeignKey(d => d.UserTypeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Users_UserTypes");
 
             entity.HasMany(d => d.Roles).WithMany(p => p.Users)
                 .UsingEntity<Dictionary<string, object>>(
@@ -339,6 +220,93 @@ public partial class ErpDbContext : DbContext
                         j.IndexerProperty<Guid>("UserId").HasColumnName("UserId");
                         j.IndexerProperty<Guid>("RoleId").HasColumnName("RoleId");
                     });
+        });
+
+        modelBuilder.Entity<UserTypes>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserTypes__3213E83F");
+
+            entity.ToTable("UserTypes", "Auth");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("Id");
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("Name");
+            entity.Property(e => e.Description)
+                .HasMaxLength(500)
+                .IsUnicode(false)
+                .HasColumnName("Description");
+            entity.Property(e => e.Status)
+                .HasDefaultValue(true)
+                .HasColumnName("Status");
+        });
+
+        modelBuilder.Entity<ERP.Domain.Entities.Finance.Account>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__FinanceAccounts__3213E83F");
+
+            entity.ToTable("Accounts", "Finance");
+
+            entity.HasIndex(e => e.AccountNumber, "UQ__FinanceAccounts__AccountNumber").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("Id");
+            entity.Property(e => e.AccountName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("AccountName");
+            entity.Property(e => e.AccountNumber)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("AccountNumber");
+            entity.Property(e => e.AccountType)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("AccountType");
+            entity.Property(e => e.Description)
+                .HasMaxLength(500)
+                .IsUnicode(false)
+                .HasColumnName("Description");
+            entity.Property(e => e.Balance)
+                .HasColumnType("decimal(18,2)")
+                .HasDefaultValue(0m)
+                .HasColumnName("Balance");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("IsActive");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("CreatedAt");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnName("UpdatedAt");
+        });
+
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            // Clave primaria compuesta
+            entity.HasKey(e => new { e.RoleId, e.PermissionId }).HasName("PK__RolePermissions__RoleId_PermissionId");
+
+            entity.ToTable("RolePermissions", "Auth");
+
+            entity.Property(e => e.RoleId)
+                .HasColumnName("RoleId");
+            entity.Property(e => e.PermissionId)
+                .HasColumnName("PermissionId");
+
+            entity.HasOne(d => d.Role).WithMany(r => r.RolePermissions)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK__RolePermissions__Role");
+
+            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermissions)
+                .HasForeignKey(d => d.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK__RolePermissions__Permission");
         });
 
         OnModelCreatingPartial(modelBuilder);

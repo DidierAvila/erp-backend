@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ERP.Domain.Entities.App;
+using ERP.Domain.Entities.Auth;
 
 namespace ERP.Domain.Entities.Sales;
 
@@ -10,13 +10,13 @@ public partial class SalesOrder
 
     public DateOnly OrderDate { get; set; }
 
-    public int CustomerId { get; set; }
+    public Guid CustomerId { get; set; }
 
     public decimal TotalAmount { get; set; }
 
     public string Status { get; set; } = null!;
 
-    public virtual Customer Customer { get; set; } = null!;
+    public virtual User Customer { get; set; } = null!;
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 

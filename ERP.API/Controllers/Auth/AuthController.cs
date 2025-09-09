@@ -1,5 +1,7 @@
 ﻿using ERP.Application.Core.Auth.Commands.Authentication;
+using ERP.Application.Core.Auth.Commands.Handlers;
 using ERP.Domain.DTOs;
+using ERP.Domain.DTOs.Auth;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,9 +13,11 @@ namespace ERP.API.Controllers.Auth
     {
         private readonly ILogger<AuthController> _logger;
         private readonly ILoginCommand _loginCommand;
-
-        public AuthController(ILoginCommand loginCommand, ILogger<AuthController> logger)
+        private readonly IUserCommandHandler _userCommandHandler;
+        
+        public AuthController(ILoginCommand loginCommand, ILogger<AuthController> logger, IUserCommandHandler userCommandHandler)
         {
+            _userCommandHandler = userCommandHandler;
             _loginCommand = loginCommand;
             _logger = logger;
         }
@@ -28,6 +32,18 @@ namespace ERP.API.Controllers.Auth
                 return BadRequest();
 
             return Ok(Response.Token);
+        }
+
+        [HttpPost]
+        [Route("Register")]
+        public async Task<IActionResult> Register([FromBody] CreateUserDto autorizacion, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Login");
+            var Response = await _userCommandHandler.CreateUser(autorizacion, cancellationToken);
+            if (Response == null)
+                return BadRequest();
+
+            return Ok(Response);
         }
     }
 }

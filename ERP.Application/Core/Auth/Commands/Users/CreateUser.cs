@@ -2,6 +2,7 @@
 using ERP.Domain.DTOs.Auth;
 using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
+using BC = BCrypt.Net.BCrypt;
 
 namespace ERP.Application.Core.Auth.Commands.Users
 {
@@ -22,11 +23,8 @@ namespace ERP.Application.Core.Auth.Commands.Users
             if (string.IsNullOrWhiteSpace(createUserDto.Email))
                 throw new ArgumentException("Email is required");
 
-            if (string.IsNullOrWhiteSpace(createUserDto.Password))
-                throw new ArgumentException("Password is required");
-
-            if (string.IsNullOrWhiteSpace(createUserDto.TypeUser))
-                throw new ArgumentException("TypeUser is required");
+            if (createUserDto.UserTypeId == Guid.Empty)
+                throw new ArgumentException("UserTypeId is required");
 
             // Check if user already exists
             var existingUser = await _userRepository.Find(x => x.Email == createUserDto.Email, cancellationToken);
@@ -35,6 +33,12 @@ namespace ERP.Application.Core.Auth.Commands.Users
 
             // Map DTO to Entity using AutoMapper
             var user = _mapper.Map<User>(createUserDto);
+
+            // Encrypt password before saving
+            if (!string.IsNullOrEmpty(user.Password))
+            {
+                user.Password = BC.HashPassword(user.Password, 12);
+            }
 
             // Create user in repository
             var createdUser = await _userRepository.Create(user, cancellationToken);

@@ -32,7 +32,7 @@ using ERP.Domain.Entities.Finance;
 using ERP.Domain.Entities.Inventory;
 using ERP.Domain.Entities.Purchases;
 using ERP.Domain.Entities.Sales;
-using ERP.Domain.Entities.App;
+
 using ERP.Domain.Repositories;
 using ERP.Infrastructure.Repositories;
 
@@ -43,7 +43,7 @@ namespace ERP.API.Extensions
         public static IServiceCollection AddApiErpExtention(this IServiceCollection services)
         {
             // AutoMapper
-            services.AddAutoMapper(typeof(UserProfile), typeof(AuthProfile), typeof(RoleProfile), typeof(ProductProfile), typeof(StockMovementProfile), typeof(FinancialTransactionProfile), typeof(SupplierProfile), typeof(SalesOrderProfile));
+            services.AddAutoMapper(typeof(UserProfile), typeof(UserTypesProfile), typeof(UserTypeProfile), typeof(PermissionProfile), typeof(AuthProfile), typeof(RoleProfile), typeof(RolePermissionProfile), typeof(ProductProfile), typeof(StockMovementProfile), typeof(FinancialTransactionProfile), typeof(AccountProfile), typeof(SupplierProfile), typeof(SalesOrderProfile));
 
             // Authentication Commands
             services.AddScoped<ILoginCommand, LoginCommand>();
@@ -52,12 +52,43 @@ namespace ERP.API.Extensions
             services.AddScoped<CreateUser>();
             services.AddScoped<UpdateUser>();
             services.AddScoped<DeleteUser>();
+            services.AddScoped<ChangePassword>();
+            services.AddScoped<UpdateUserAdditionalData>();
             services.AddScoped<IUserCommandHandler, UserCommandHandler>();
 
             // User Queries  
             services.AddScoped<GetUserById>();
             services.AddScoped<GetAllUsers>();
             services.AddScoped<IUserQueryHandler, UserQueryHandler>();
+
+            // UserType Commands
+            services.AddScoped<ERP.Application.Core.Auth.Commands.UserTypes.CreateUserType>();
+            services.AddScoped<ERP.Application.Core.Auth.Commands.UserTypes.UpdateUserType>();
+            services.AddScoped<ERP.Application.Core.Auth.Commands.UserTypes.DeleteUserType>();
+            services.AddScoped<IUserTypeCommandHandler, UserTypeCommandHandler>();
+
+            // UserType Queries
+            services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetUserTypeById>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetAllUserTypes>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetActiveUserTypes>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetUserTypesSummary>();
+            services.AddScoped<IUserTypeQueryHandler, UserTypeQueryHandler>();
+
+            // Permission Commands
+            services.AddScoped<ERP.Application.Core.Auth.Commands.Permissions.CreatePermission>();
+            services.AddScoped<ERP.Application.Core.Auth.Commands.Permissions.UpdatePermission>();
+            services.AddScoped<ERP.Application.Core.Auth.Commands.Permissions.DeletePermission>();
+            services.AddScoped<IPermissionCommandHandler, PermissionCommandHandler>();
+
+            // Permission Queries
+            services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetPermissionById>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetAllPermissions>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetActivePermissions>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetPermissionsSummary>();
+            services.AddScoped<IPermissionQueryHandler, PermissionQueryHandler>();
+
+            // System Commands
+            services.AddScoped<ERP.Application.Core.Auth.Commands.System.InitializeSystemData>();
 
             // Role Commands
             services.AddScoped<CreateRole>();
@@ -69,6 +100,15 @@ namespace ERP.API.Extensions
             services.AddScoped<GetRoleById>();
             services.AddScoped<GetAllRoles>();
             services.AddScoped<IRoleQueryHandler, RoleQueryHandler>();
+
+            // RolePermission Commands
+            services.AddScoped<ERP.Application.Core.Auth.Commands.RolePermissions.AssignPermissionToRole>();
+            services.AddScoped<ERP.Application.Core.Auth.Commands.RolePermissions.RemovePermissionFromRole>();
+
+            // RolePermission Queries
+            services.AddScoped<ERP.Application.Core.Auth.Queries.RolePermissions.GetAllRolePermissions>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.RolePermissions.GetPermissionsByRole>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.RolePermissions.GetRolesByPermission>();
 
             // Product Commands (Inventory)
             services.AddScoped<CreateProduct>();
@@ -121,6 +161,19 @@ namespace ERP.API.Extensions
             services.AddScoped<GetFinancialSummary>();
             services.AddScoped<IFinancialTransactionQueryHandler, FinancialTransactionQueryHandler>();
 
+            // Account Commands (Finance)
+            services.AddScoped<ERP.Application.Core.Finance.Commands.Accounts.CreateAccount>();
+            services.AddScoped<ERP.Application.Core.Finance.Commands.Accounts.UpdateAccount>();
+            services.AddScoped<ERP.Application.Core.Finance.Commands.Accounts.DeleteAccount>();
+            services.AddScoped<ERP.Application.Core.Finance.Commands.Handlers.IAccountCommandHandler, ERP.Application.Core.Finance.Commands.Handlers.AccountCommandHandler>();
+
+            // Account Queries (Finance)
+            services.AddScoped<ERP.Application.Core.Finance.Queries.Accounts.GetAccountById>();
+            services.AddScoped<ERP.Application.Core.Finance.Queries.Accounts.GetAllAccounts>();
+            services.AddScoped<ERP.Application.Core.Finance.Queries.Accounts.GetAccountsByType>();
+            services.AddScoped<ERP.Application.Core.Finance.Queries.Accounts.GetActiveAccounts>();
+            services.AddScoped<ERP.Application.Core.Finance.Queries.Handlers.IAccountQueryHandler, ERP.Application.Core.Finance.Queries.Handlers.AccountQueryHandler>();
+
             // Supplier Commands (Purchases)
             services.AddScoped<CreateSupplier>();
             services.AddScoped<UpdateSupplier>();
@@ -150,13 +203,16 @@ namespace ERP.API.Extensions
             services.AddScoped<IRepositoryBase<User>, RepositoryBase<User>>();
             services.AddScoped<IRepositoryBase<Session>, RepositoryBase<Session>>();
             services.AddScoped<IRepositoryBase<Role>, RepositoryBase<Role>>();
+            services.AddScoped<IRepositoryBase<Permission>, RepositoryBase<Permission>>();
+            services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
             services.AddScoped<IRepositoryBase<Product>, RepositoryBase<Product>>();
             services.AddScoped<IRepositoryBase<StockMovement>, RepositoryBase<StockMovement>>();
             // services.AddScoped<IRepositoryBase<InventoryLocation>, RepositoryBase<InventoryLocation>>(); // Comentado hasta completar entidad
             services.AddScoped<IRepositoryBase<FinancialTransaction>, RepositoryBase<FinancialTransaction>>();
+            services.AddScoped<IRepositoryBase<ERP.Domain.Entities.Finance.Account>, RepositoryBase<ERP.Domain.Entities.Finance.Account>>();
             services.AddScoped<IRepositoryBase<Supplier>, RepositoryBase<Supplier>>();
             services.AddScoped<IRepositoryBase<SalesOrder>, RepositoryBase<SalesOrder>>();
-            services.AddScoped<IRepositoryBase<Customer>, RepositoryBase<Customer>>();
+            services.AddScoped<IRepositoryBase<UserTypes>, RepositoryBase<UserTypes>>();
 
             return services;
         }

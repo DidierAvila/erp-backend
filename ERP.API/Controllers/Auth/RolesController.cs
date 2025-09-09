@@ -1,5 +1,7 @@
 using ERP.Application.Core.Auth.Commands.Handlers;
+using ERP.Application.Core.Auth.Commands.RolePermissions;
 using ERP.Application.Core.Auth.Queries.Handlers;
+using ERP.Application.Core.Auth.Queries.RolePermissions;
 using ERP.Domain.DTOs.Auth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +13,22 @@ namespace ERP.API.Controllers.Auth
     {
         private readonly IRoleCommandHandler _roleCommandHandler;
         private readonly IRoleQueryHandler _roleQueryHandler;
+        private readonly GetPermissionsByRole _getPermissionsByRole;
+        private readonly AssignPermissionToRole _assignPermissionToRole;
+        private readonly RemovePermissionFromRole _removePermissionFromRole;
 
-        public RolesController(IRoleCommandHandler roleCommandHandler, IRoleQueryHandler roleQueryHandler)
+        public RolesController(
+            IRoleCommandHandler roleCommandHandler, 
+            IRoleQueryHandler roleQueryHandler,
+            GetPermissionsByRole getPermissionsByRole,
+            AssignPermissionToRole assignPermissionToRole,
+            RemovePermissionFromRole removePermissionFromRole)
         {
             _roleCommandHandler = roleCommandHandler;
             _roleQueryHandler = roleQueryHandler;
+            _getPermissionsByRole = getPermissionsByRole;
+            _assignPermissionToRole = assignPermissionToRole;
+            _removePermissionFromRole = removePermissionFromRole;
         }
 
         // GET: api/Roles
@@ -113,6 +126,77 @@ namespace ERP.API.Controllers.Auth
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        // GET: api/Roles/{id}/permissions
+        /// <summary>
+        /// Obtener todos los permisos asignados a un rol específico
+        /// </summary>
+        [HttpGet("{roleId}/permissions")]
+        public async Task<ActionResult<IEnumerable<RolePermissionDto>>> GetRolePermissions(Guid roleId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _getPermissionsByRole.HandleAsync(roleId, cancellationToken);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", details = ex.Message });
+            }
+        }
+
+        // POST: api/Roles/{roleId}/permissions/{permissionId}
+        /// <summary>
+        /// Asignar un permiso específico a un rol
+        /// </summary>
+        [HttpPost("{roleId}/permissions/{permissionId}")]
+        public async Task<ActionResult<RolePermissionDto>> AssignPermissionToRole(Guid roleId, Guid permissionId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var request = new AssignPermissionToRoleDto { RoleId = roleId, PermissionId = permissionId };
+                var result = await _assignPermissionToRole.HandleAsync(request, cancellationToken);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", details = ex.Message });
+            }
+        }
+
+        // DELETE: api/Roles/{roleId}/permissions/{permissionId}
+        /// <summary>
+        /// Remover un permiso específico de un rol
+        /// </summary>
+        [HttpDelete("{roleId}/permissions/{permissionId}")]
+        public async Task<ActionResult<bool>> RemovePermissionFromRole(Guid roleId, Guid permissionId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await _removePermissionFromRole.HandleAsync(roleId, permissionId, cancellationToken);
+                return Ok(new { success = result, message = "Permiso removido del rol correctamente" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", details = ex.Message });
             }
         }
     }

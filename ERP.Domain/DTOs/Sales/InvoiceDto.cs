@@ -6,7 +6,7 @@ namespace ERP.Domain.DTOs.Sales
         public string InvoiceNumber { get; set; } = null!;
         public DateOnly InvoiceDate { get; set; }
         public int? SalesOrderId { get; set; }
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
         public string? CustomerName { get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } = null!;
@@ -17,7 +17,7 @@ namespace ERP.Domain.DTOs.Sales
         public string InvoiceNumber { get; set; } = null!;
         public DateOnly InvoiceDate { get; set; }
         public int? SalesOrderId { get; set; }
-        public int CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } = null!;
     }

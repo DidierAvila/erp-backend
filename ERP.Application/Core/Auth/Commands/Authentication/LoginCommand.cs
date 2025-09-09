@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using BC = BCrypt.Net.BCrypt;
 
 namespace ERP.Application.Core.Auth.Commands.Authentication
 {
@@ -29,15 +30,30 @@ namespace ERP.Application.Core.Auth.Commands.Authentication
 
         public async Task<LoginResponse?> Login(LoginRequest autorizacion, CancellationToken cancellationToken)
         {
-            User? CurrentUser = await _userRepository.Find(x => x.Email == autorizacion.Email && x.Password == autorizacion.Password, cancellationToken);
-            if (CurrentUser != null)
+            // Buscar usuario solo por email
+            User? CurrentUser = await _userRepository.Find(x => x.Email == autorizacion.Email, cancellationToken);
+            
+            // Verificar si el usuario existe y la contraseña es correcta
+            if (CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.Password))
             {
-                _logger.LogInformation("Login: succes");
-                string CurrentToken = await GetToken(CurrentUser, cancellationToken);
-                LoginResponse loginResponse = new()
-                { Token = CurrentToken };
+                bool isPasswordValid = BC.Verify(autorizacion.Password, CurrentUser.Password);
+                if (isPasswordValid)
+                {
+                    _logger.LogInformation("Login: success");
+                    string CurrentToken = await GetToken(CurrentUser, cancellationToken);
+                    LoginResponse loginResponse = new()
+                    { Token = CurrentToken };
 
-                return loginResponse;
+                    return loginResponse;
+                }
+                else
+                {
+                    _logger.LogWarning("Login: invalid password for user {Email}", autorizacion.Email);
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Login: user not found {Email}", autorizacion.Email);
             }
             return null;
         }
@@ -53,7 +69,7 @@ namespace ERP.Application.Core.Auth.Commands.Authentication
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                //new Claim(ClaimTypes.GivenName, user.FirstName),
+                new Claim(ClaimTypes.GivenName, user.Name),
                 //new Claim(ClaimTypes.Surname, user.LastName),
                 //new Claim(ClaimTypes.Role, user.Roles),
             };

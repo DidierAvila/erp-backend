@@ -1,7 +1,7 @@
 using AutoMapper;
 using ERP.Domain.DTOs.Sales;
 using ERP.Domain.Entities.Sales;
-using ERP.Domain.Entities.App;
+using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
 
 namespace ERP.Application.Core.Sales.Commands.SalesOrders
@@ -9,10 +9,10 @@ namespace ERP.Application.Core.Sales.Commands.SalesOrders
     public class CreateSalesOrder
     {
         private readonly IRepositoryBase<SalesOrder> _salesOrderRepository;
-        private readonly IRepositoryBase<Customer> _customerRepository;
+        private readonly IRepositoryBase<User> _customerRepository;
         private readonly IMapper _mapper;
 
-        public CreateSalesOrder(IRepositoryBase<SalesOrder> salesOrderRepository, IRepositoryBase<Customer> customerRepository, IMapper mapper)
+        public CreateSalesOrder(IRepositoryBase<SalesOrder> salesOrderRepository, IRepositoryBase<User> customerRepository, IMapper mapper)
         {
             _salesOrderRepository = salesOrderRepository;
             _customerRepository = customerRepository;
@@ -22,7 +22,7 @@ namespace ERP.Application.Core.Sales.Commands.SalesOrders
         public async Task<SalesOrderDto> HandleAsync(CreateSalesOrderDto createSalesOrderDto, CancellationToken cancellationToken)
         {
             // Validations
-            if (createSalesOrderDto.CustomerId <= 0)
+            if (createSalesOrderDto.CustomerId == Guid.Empty)
                 throw new ArgumentException("Customer ID is required");
 
             if (string.IsNullOrWhiteSpace(createSalesOrderDto.Status))
@@ -31,8 +31,8 @@ namespace ERP.Application.Core.Sales.Commands.SalesOrders
             if (createSalesOrderDto.Items == null || !createSalesOrderDto.Items.Any())
                 throw new ArgumentException("At least one item is required");
 
-            // Check if customer exists (assuming Customer uses Guid ID based on DTO)
-            var customer = await _customerRepository.Find(x => x.Id.ToString().Contains(createSalesOrderDto.CustomerId.ToString()), cancellationToken);
+            // Check if customer exists
+            var customer = await _customerRepository.Find(x => x.Id == createSalesOrderDto.CustomerId, cancellationToken);
             if (customer == null)
                 throw new KeyNotFoundException($"Customer with ID {createSalesOrderDto.CustomerId} not found");
 

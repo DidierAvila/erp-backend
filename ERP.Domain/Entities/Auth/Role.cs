@@ -1,16 +1,34 @@
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ERP.Domain.Entities.Auth;
 
 namespace ERP.Domain.Entities;
 
+[Table("Roles", Schema = "Auth")]
 public partial class Role
 {
+    [Key]
     public Guid Id { get; set; }
 
-    public string Name { get; set; } = null!;
+    [Required]
+    [MaxLength(100)]
+    public required string Name { get; set; }
 
-    public virtual ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+    [MaxLength(500)]
+    public string? Description { get; set; }
 
-    public virtual ICollection<User> Users { get; set; } = new List<User>();
+    public required bool Status { get; set; } = true;
+
+    public required DateTime CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    // Navigation properties
+    public virtual ICollection<RolePermission> RolePermissions { get; set; } = [];
+
+    public virtual ICollection<User> Users { get; set; } = [];
+
+    // Helper property para acceso directo a permisos
+    [NotMapped]
+    public virtual ICollection<Permission> Permissions => [.. RolePermissions.Select(rp => rp.Permission)];
 }
