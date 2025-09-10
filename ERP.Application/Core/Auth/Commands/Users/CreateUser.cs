@@ -9,11 +9,13 @@ namespace ERP.Application.Core.Auth.Commands.Users
     public class CreateUser
     {
         private readonly IRepositoryBase<User> _userRepository;
+        private readonly IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> _userTypeRepository;
         private readonly IMapper _mapper;
 
-        public CreateUser(IRepositoryBase<User> userRepository, IMapper mapper)
+        public CreateUser(IRepositoryBase<User> userRepository, IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> userTypeRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _userTypeRepository = userTypeRepository;
             _mapper = mapper;
         }
 
@@ -43,8 +45,14 @@ namespace ERP.Application.Core.Auth.Commands.Users
             // Create user in repository
             var createdUser = await _userRepository.Create(user, cancellationToken);
 
+            // Obtener el UserType para incluir el nombre
+            var userType = await _userTypeRepository.Find(x => x.Id == createdUser.UserTypeId, cancellationToken);
+
             // Map Entity to DTO using AutoMapper
-            return _mapper.Map<UserDto>(createdUser);
+            var userDto = _mapper.Map<UserDto>(createdUser);
+            userDto.UserTypeName = userType?.Name;
+
+            return userDto;
         }
     }
 }

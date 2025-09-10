@@ -1,6 +1,7 @@
 using ERP.Application.Core.Auth.Commands.Handlers;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Domain.DTOs.Auth;
+using ERP.Domain.DTOs.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Auth
@@ -20,12 +21,49 @@ namespace ERP.API.Controllers.Auth
             _logger = logger;
         }
 
+        /// <summary>
+        /// Obtiene una lista paginada de usuarios con filtros opcionales
+        /// </summary>
+        /// <param name="filter">Filtros de búsqueda y paginación</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Lista paginada de usuarios</returns>
+        /// <remarks>
+        /// Campos disponibles para SortBy: name, email, username, createdat, usertypeid
+        /// 
+        /// Ejemplo de uso:
+        /// GET /api/users?page=1&amp;pageSize=10&amp;search=juan&amp;sortBy=name
+        /// </remarks>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAll(CancellationToken cancellationToken)
+        public async Task<ActionResult<PaginationResponseDto<UserListResponseDto>>> GetAll(
+            [FromQuery] UserFilterDto filter, 
+            CancellationToken cancellationToken)
         {
             try
             {
-                var users = await _userQueryHandler.GetAllUsers(cancellationToken);
+                var users = await _userQueryHandler.GetAllUsersFiltered(filter, cancellationToken);
+                return Ok(users);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all users with filters");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Obtener todos los usuarios sin paginación (para uso interno/admin)
+        /// Optimizado sin AdditionalData para mejor rendimiento
+        /// </summary>
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<UserBasicDto>>> GetAllUnpaginated(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var users = await _userQueryHandler.GetAllUsersBasic(cancellationToken);
                 return Ok(users);
             }
             catch (Exception ex)

@@ -14,6 +14,29 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
+// Configure CORS for frontend
+var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>() 
+                     ?? new[] { "http://localhost:4200" };
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+    
+    // Política más permisiva para desarrollo
+    options.AddPolicy("DevelopmentCors", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()  
+              .AllowAnyMethod();
+    });
+});
+
 // Add Swagger configuration
 builder.Services.AddSwaggerGen(options =>
 {
@@ -82,6 +105,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Enable CORS based on environment
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevelopmentCors");
+}
+else
+{
+    app.UseCors("AllowFrontend");
+}
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

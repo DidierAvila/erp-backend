@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
-using ERP.Domain.Entities;
+using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
 
 namespace ERP.Application.Core.Auth.Commands.Roles
 {
     public class DeleteRole
     {
-        private readonly IRepositoryBase<Role> _roleRepository;
+        private readonly IRepositoryBase<ERP.Domain.Entities.Auth.Role> _roleRepository;
 
-        public DeleteRole(IRepositoryBase<Role> roleRepository)
+        public DeleteRole(IRepositoryBase<ERP.Domain.Entities.Auth.Role> roleRepository)
         {
             _roleRepository = roleRepository;
         }

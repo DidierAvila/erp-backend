@@ -1,8 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ERP.Domain.Entities.Auth;
 
-namespace ERP.Domain.Entities;
+namespace ERP.Domain.Entities.Auth;
 
 [Table("Roles", Schema = "Auth")]
 public partial class Role

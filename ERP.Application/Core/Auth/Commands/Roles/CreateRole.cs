@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using ERP.Domain.DTOs.Auth;
-using ERP.Domain.Entities;
+using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
 
 namespace ERP.Application.Core.Auth.Commands.Roles

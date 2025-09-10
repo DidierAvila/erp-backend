@@ -1,16 +1,16 @@
 using AutoMapper;
 using ERP.Domain.DTOs.Auth;
-using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
+using ERP.Domain.Entities.Auth;
 
 namespace ERP.Application.Core.Auth.Queries.Permissions
 {
     public class GetActivePermissions
     {
-        private readonly IRepositoryBase<Permission> _permissionRepository;
+        private readonly IRepositoryBase<ERP.Domain.Entities.Auth.Permission> _permissionRepository;
         private readonly IMapper _mapper;
 
-        public GetActivePermissions(IRepositoryBase<Permission> permissionRepository, IMapper mapper)
+        public GetActivePermissions(IRepositoryBase<ERP.Domain.Entities.Auth.Permission> permissionRepository, IMapper mapper)
         {
             _permissionRepository = permissionRepository;
             _mapper = mapper;

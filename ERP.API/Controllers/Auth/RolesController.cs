@@ -3,6 +3,7 @@ using ERP.Application.Core.Auth.Commands.RolePermissions;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Application.Core.Auth.Queries.RolePermissions;
 using ERP.Domain.DTOs.Auth;
+using ERP.Domain.DTOs.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Auth
@@ -31,9 +32,43 @@ namespace ERP.API.Controllers.Auth
             _removePermissionFromRole = removePermissionFromRole;
         }
 
-        // GET: api/Roles
+        /// <summary>
+        /// Obtiene una lista paginada de roles con filtros opcionales
+        /// </summary>
+        /// <param name="filter">Filtros de búsqueda y paginación</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Lista paginada de roles</returns>
+        /// <remarks>
+        /// Campos disponibles para SortBy: name, description, status, createdat
+        /// 
+        /// Ejemplo de uso:
+        /// GET /api/roles?page=1&amp;pageSize=10&amp;name=admin&amp;status=true&amp;sortBy=name
+        /// </remarks>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RoleDto>>> GetAllRoles(CancellationToken cancellationToken)
+        public async Task<ActionResult<PaginationResponseDto<RoleListResponseDto>>> GetAllRoles(
+            [FromQuery] RoleFilterDto filter,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var roles = await _roleQueryHandler.GetAllRolesFiltered(filter, cancellationToken);
+                return Ok(roles);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving roles");
+            }
+        }
+
+        /// <summary>
+        /// Get all Roles (simple list without pagination)
+        /// </summary>
+        [HttpGet("simple")]
+        public async Task<ActionResult<IEnumerable<RoleDto>>> GetAllRolesSimple(CancellationToken cancellationToken)
         {
             try
             {

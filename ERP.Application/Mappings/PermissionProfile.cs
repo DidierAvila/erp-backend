@@ -14,6 +14,9 @@ namespace ERP.Application.Mappings
             CreateMap<Permission, PermissionSummaryDto>()
                 .ForMember(dest => dest.RoleCount, opt => opt.MapFrom(src => src.Roles.Count));
 
+            CreateMap<Permission, PermissionListResponseDto>()
+                .ForMember(dest => dest.RoleCount, opt => opt.MapFrom(src => src.Roles.Count));
+
             CreateMap<Permission, PermissionWithRolesDto>()
                 .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.Roles));
 

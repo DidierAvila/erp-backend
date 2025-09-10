@@ -5,26 +5,26 @@ using ERP.Domain.Repositories;
 
 namespace ERP.Application.Core.Auth.Queries.Users
 {
-    public class GetAllUsers
+    public class GetAllUsersBasic
     {
         private readonly IRepositoryBase<User> _userRepository;
         private readonly IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> _userTypeRepository;
         private readonly IMapper _mapper;
 
-        public GetAllUsers(IRepositoryBase<User> userRepository, IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> userTypeRepository, IMapper mapper)
+        public GetAllUsersBasic(IRepositoryBase<User> userRepository, IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> userTypeRepository, IMapper mapper)
         {
             _userRepository = userRepository;
             _userTypeRepository = userTypeRepository;
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<UserDto>> HandleAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<UserBasicDto>> HandleAsync(CancellationToken cancellationToken)
         {
             var users = await _userRepository.GetAll(cancellationToken);
             var userTypes = await _userTypeRepository.GetAll(cancellationToken);
 
-            // Map collection of Entities to DTOs using AutoMapper
-            var userDtos = _mapper.Map<IEnumerable<UserDto>>(users);
+            // Map collection of Entities to DTOs using AutoMapper (sin AdditionalData)
+            var userDtos = _mapper.Map<IEnumerable<UserBasicDto>>(users);
 
             // Asignar UserTypeName manualmente
             foreach (var userDto in userDtos)

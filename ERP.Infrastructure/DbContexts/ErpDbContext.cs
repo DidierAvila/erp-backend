@@ -15,13 +15,13 @@ public partial class ErpDbContext : DbContext
     {
     }
 
-    public virtual DbSet<ERP.Domain.Entities.Account> AuthAccounts { get; set; }
+    public virtual DbSet<ERP.Domain.Entities.Auth.Account> AuthAccounts { get; set; }
 
     public virtual DbSet<ERP.Domain.Entities.Finance.Account> FinanceAccounts { get; set; }
 
-    public virtual DbSet<Permission> Permissions { get; set; }
+    public virtual DbSet<ERP.Domain.Entities.Auth.Permission> Permissions { get; set; }
 
-    public virtual DbSet<Role> Roles { get; set; }
+    public virtual DbSet<ERP.Domain.Entities.Auth.Role> Roles { get; set; }
 
     public virtual DbSet<RolePermission> RolePermissions { get; set; }
 

@@ -14,6 +14,9 @@ namespace ERP.Application.Mappings
             CreateMap<UserTypes, UserTypeSummaryDto>()
                 .ForMember(dest => dest.UserCount, opt => opt.MapFrom(src => src.Users.Count));
 
+            CreateMap<UserTypes, UserTypeListResponseDto>()
+                .ForMember(dest => dest.UserCount, opt => opt.MapFrom(src => src.Users.Count));
+
             // DTO to Entity mappings
             CreateMap<CreateUserTypeDto, UserTypes>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()));

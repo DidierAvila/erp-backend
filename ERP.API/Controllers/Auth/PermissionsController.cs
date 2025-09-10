@@ -2,6 +2,7 @@ using ERP.Application.Core.Auth.Commands.Handlers;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Application.Core.Auth.Queries.RolePermissions;
 using ERP.Domain.DTOs.Auth;
+using ERP.Domain.DTOs.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Auth
@@ -97,10 +98,42 @@ namespace ERP.API.Controllers.Auth
         }
 
         /// <summary>
-        /// Get all Permissions
+        /// Obtiene una lista paginada de permisos con filtros opcionales
         /// </summary>
+        /// <param name="filter">Filtros de búsqueda y paginación</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Lista paginada de permisos</returns>
+        /// <remarks>
+        /// Campos disponibles para SortBy: name, description, status, createdat
+        /// 
+        /// Ejemplo de uso:
+        /// GET /api/permissions?page=1&amp;pageSize=10&amp;name=read&amp;status=true&amp;sortBy=name
+        /// </remarks>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PermissionDto>>> GetAllPermissions(CancellationToken cancellationToken)
+        public async Task<ActionResult<PaginationResponseDto<PermissionListResponseDto>>> GetAllPermissions(
+            [FromQuery] PermissionFilterDto filter,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var permissions = await _queryHandler.GetAllPermissionsFiltered(filter, cancellationToken);
+                return Ok(permissions);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving permissions");
+            }
+        }
+
+        /// <summary>
+        /// Get all Permissions (simple list without pagination)
+        /// </summary>
+        [HttpGet("simple")]
+        public async Task<ActionResult<IEnumerable<PermissionDto>>> GetAllPermissionsSimple(CancellationToken cancellationToken)
         {
             var permissions = await _queryHandler.GetAllPermissions(cancellationToken);
             return Ok(permissions);

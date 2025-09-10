@@ -8,11 +8,13 @@ namespace ERP.Application.Core.Auth.Commands.Users
     public class UpdateUser
     {
         private readonly IRepositoryBase<User> _userRepository;
+        private readonly IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> _userTypeRepository;
         private readonly IMapper _mapper;
 
-        public UpdateUser(IRepositoryBase<User> userRepository, IMapper mapper)
+        public UpdateUser(IRepositoryBase<User> userRepository, IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> userTypeRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _userTypeRepository = userTypeRepository;
             _mapper = mapper;
         }
 
@@ -32,8 +34,14 @@ namespace ERP.Application.Core.Auth.Commands.Users
             // Update in repository
             await _userRepository.Update(user, cancellationToken);
 
+            // Obtener el UserType para incluir el nombre
+            var userType = await _userTypeRepository.Find(x => x.Id == user.UserTypeId, cancellationToken);
+
             // Map Entity to DTO using AutoMapper
-            return _mapper.Map<UserDto>(user);
+            var userDto = _mapper.Map<UserDto>(user);
+            userDto.UserTypeName = userType?.Name;
+
+            return userDto;
         }
     }
 }

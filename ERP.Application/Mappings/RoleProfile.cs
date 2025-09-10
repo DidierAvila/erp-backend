@@ -1,6 +1,6 @@
 using AutoMapper;
 using ERP.Domain.DTOs.Auth;
-using ERP.Domain.Entities;
+using ERP.Domain.Entities.Auth;
 
 namespace ERP.Application.Mappings
 {
@@ -15,6 +15,10 @@ namespace ERP.Application.Mappings
             CreateMap<Role, RoleSummaryDto>()
                 .ForMember(dest => dest.PermissionCount, opt => opt.MapFrom(src => src.Permissions.Count))
                 .ForMember(dest => dest.UserCount, opt => opt.MapFrom(src => src.Users.Count));
+
+            CreateMap<Role, RoleListResponseDto>()
+                .ForMember(dest => dest.UserCount, opt => opt.MapFrom(src => src.Users.Count))
+                .ForMember(dest => dest.PermissionCount, opt => opt.MapFrom(src => src.Permissions.Count));
 
             CreateMap<Role, RoleWithDetailsDto>()
                 .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions))

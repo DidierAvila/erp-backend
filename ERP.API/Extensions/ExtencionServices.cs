@@ -59,6 +59,8 @@ namespace ERP.API.Extensions
             // User Queries  
             services.AddScoped<GetUserById>();
             services.AddScoped<GetAllUsers>();
+            services.AddScoped<GetAllUsersBasic>();
+            services.AddScoped<GetAllUsersFiltered>();
             services.AddScoped<IUserQueryHandler, UserQueryHandler>();
 
             // UserType Commands
@@ -72,6 +74,7 @@ namespace ERP.API.Extensions
             services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetAllUserTypes>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetActiveUserTypes>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetUserTypesSummary>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.UserType.GetAllUserTypesFiltered>();
             services.AddScoped<IUserTypeQueryHandler, UserTypeQueryHandler>();
 
             // Permission Commands
@@ -85,6 +88,7 @@ namespace ERP.API.Extensions
             services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetAllPermissions>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetActivePermissions>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetPermissionsSummary>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.Permission.GetAllPermissionsFiltered>();
             services.AddScoped<IPermissionQueryHandler, PermissionQueryHandler>();
 
             // System Commands
@@ -99,6 +103,7 @@ namespace ERP.API.Extensions
             // Role Queries  
             services.AddScoped<GetRoleById>();
             services.AddScoped<GetAllRoles>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.Role.GetAllRolesFiltered>();
             services.AddScoped<IRoleQueryHandler, RoleQueryHandler>();
 
             // RolePermission Commands

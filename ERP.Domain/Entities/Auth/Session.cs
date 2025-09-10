@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using ERP.Domain.Entities.Auth;
-
-namespace ERP.Domain.Entities;
+namespace ERP.Domain.Entities.Auth;
 
 public partial class Session
 {
