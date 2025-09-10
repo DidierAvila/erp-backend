@@ -1,4 +1,5 @@
 using ERP.Application.Core.Auth.Commands.Handlers;
+using ERP.Application.Core.Auth.Commands.Users;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Domain.DTOs.Auth;
 using ERP.Domain.DTOs.Common;
@@ -287,6 +288,106 @@ namespace ERP.API.Controllers.Auth
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating additional data for user {UserId}", id);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        // ======================================
+        // ROLE MANAGEMENT ENDPOINTS
+        // ======================================
+
+        /// <summary>
+        /// Obtiene todos los roles asignados a un usuario
+        /// </summary>
+        /// <param name="id">ID del usuario</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Lista de roles del usuario</returns>
+        [HttpGet("{id}/roles")]
+        public async Task<ActionResult<List<UserRoleDto>>> GetUserRoles(Guid id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var roles = await _userCommandHandler.GetUserRoles(id, cancellationToken);
+                return Ok(roles);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting roles for user {UserId}", id);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Asigna múltiples roles a un usuario
+        /// </summary>
+        /// <param name="id">ID del usuario</param>
+        /// <param name="roleIds">Lista de IDs de roles a asignar</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Resultado de la asignación múltiple</returns>
+        [HttpPost("{id}/roles")]
+        public async Task<ActionResult<MultipleRoleAssignmentResult>> AssignRolesToUser(
+            Guid id, 
+            [FromBody] List<Guid> roleIds, 
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var command = new ERP.Application.Core.Auth.Commands.Users.AssignMultipleRolesToUser
+                {
+                    UserId = id,
+                    RoleIds = roleIds
+                };
+
+                var result = await _userCommandHandler.AssignMultipleRolesToUser(command, cancellationToken);
+                
+                if (result.IsFullySuccessful)
+                {
+                    return Ok(result);
+                }
+                else if (result.AssignedRoles.Count > 0)
+                {
+                    return Ok(result); // Éxito parcial
+                }
+                else
+                {
+                    return BadRequest(result); // Falló todo
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning roles to user {UserId}", id);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Remueve múltiples roles de un usuario
+        /// </summary>
+        /// <param name="id">ID del usuario</param>
+        /// <param name="roleIds">Lista de IDs de roles a remover</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Resultado de la remoción múltiple</returns>
+        [HttpDelete("{id}/roles")]
+        public async Task<ActionResult<MultipleRoleRemovalResult>> RemoveRolesFromUser(
+            Guid id, 
+            [FromBody] List<Guid> roleIds, 
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var command = new ERP.Application.Core.Auth.Commands.Users.RemoveMultipleRolesFromUser
+                {
+                    UserId = id,
+                    RoleIds = roleIds
+                };
+
+                var result = await _userCommandHandler.RemoveMultipleRolesFromUser(command, cancellationToken);
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing roles from user {UserId}", id);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }

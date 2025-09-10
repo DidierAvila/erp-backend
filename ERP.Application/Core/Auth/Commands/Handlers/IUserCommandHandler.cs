@@ -1,4 +1,5 @@
-﻿using ERP.Domain.DTOs.Auth;
+﻿using ERP.Application.Core.Auth.Commands.Users;
+using ERP.Domain.DTOs.Auth;
 
 namespace ERP.Application.Core.Auth.Commands.Handlers
 {
@@ -8,6 +9,11 @@ namespace ERP.Application.Core.Auth.Commands.Handlers
         Task<UserDto> UpdateUser(Guid id, UpdateUserDto command, CancellationToken cancellationToken);
         Task<bool> DeleteUser(Guid id, CancellationToken cancellationToken);
         Task<bool> ChangePassword(Guid userId, ChangePasswordDto command, CancellationToken cancellationToken);
+        
+        // Role management methods
+        Task<MultipleRoleAssignmentResult> AssignMultipleRolesToUser(AssignMultipleRolesToUser command, CancellationToken cancellationToken);
+        Task<MultipleRoleRemovalResult> RemoveMultipleRolesFromUser(RemoveMultipleRolesFromUser command, CancellationToken cancellationToken);
+        Task<List<UserRoleDto>> GetUserRoles(Guid userId, CancellationToken cancellationToken);
         
         // Additional Data methods
         Task<UserAdditionalValueResponseDto> SetUserAdditionalValue(Guid userId, UserAdditionalDataOperationDto operationDto, CancellationToken cancellationToken);

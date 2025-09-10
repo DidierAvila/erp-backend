@@ -2,6 +2,7 @@
 using ERP.Application.Core.Auth.Commands.Handlers;
 using ERP.Application.Core.Auth.Commands.Roles;
 using ERP.Application.Core.Auth.Commands.Users;
+using ERP.Application.Core.Auth.Commands.RolePermissions;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Application.Core.Auth.Queries.Roles;
 using ERP.Application.Core.Auth.Queries.Users;
@@ -10,11 +11,9 @@ using ERP.Application.Core.Finance.Commands.Handlers;
 using ERP.Application.Core.Finance.Queries.FinancialTransactions;
 using ERP.Application.Core.Finance.Queries.Handlers;
 using ERP.Application.Core.Inventory.Commands.Handlers;
-using ERP.Application.Core.Inventory.Commands.InventoryLocations;
 using ERP.Application.Core.Inventory.Commands.Products;
 using ERP.Application.Core.Inventory.Commands.StockMovements;
 using ERP.Application.Core.Inventory.Queries.Handlers;
-using ERP.Application.Core.Inventory.Queries.InventoryLocations;
 using ERP.Application.Core.Inventory.Queries.Products;
 using ERP.Application.Core.Inventory.Queries.StockMovements;
 using ERP.Application.Core.Purchases.Commands.Suppliers;
@@ -26,6 +25,7 @@ using ERP.Application.Core.Sales.Commands.SalesOrders;
 using ERP.Application.Core.Sales.Queries.Handlers;
 using ERP.Application.Core.Sales.Queries.SalesOrders;
 using ERP.Application.Mappings;
+using ERP.Application.Services;
 using ERP.Domain.Entities;
 using ERP.Domain.Entities.Auth;
 using ERP.Domain.Entities.Finance;
@@ -54,6 +54,8 @@ namespace ERP.API.Extensions
             services.AddScoped<DeleteUser>();
             services.AddScoped<ChangePassword>();
             services.AddScoped<UpdateUserAdditionalData>();
+            services.AddScoped<AssignMultipleRolesToUser>();
+            services.AddScoped<RemoveMultipleRolesFromUser>();
             services.AddScoped<IUserCommandHandler, UserCommandHandler>();
 
             // User Queries  
@@ -91,6 +93,9 @@ namespace ERP.API.Extensions
             services.AddScoped<ERP.Application.Core.Auth.Queries.Permission.GetAllPermissionsFiltered>();
             services.AddScoped<IPermissionQueryHandler, PermissionQueryHandler>();
 
+            // Permission Services
+            services.AddScoped<ERP.Application.Services.PermissionSeederService>();
+
             // System Commands
             services.AddScoped<ERP.Application.Core.Auth.Commands.System.InitializeSystemData>();
 
@@ -98,6 +103,7 @@ namespace ERP.API.Extensions
             services.AddScoped<CreateRole>();
             services.AddScoped<UpdateRole>();
             services.AddScoped<DeleteRole>();
+            services.AddScoped<RemoveMultiplePermissionsFromRole>();
             services.AddScoped<IRoleCommandHandler, RoleCommandHandler>();
 
             // Role Queries  
@@ -108,6 +114,7 @@ namespace ERP.API.Extensions
 
             // RolePermission Commands
             services.AddScoped<ERP.Application.Core.Auth.Commands.RolePermissions.AssignPermissionToRole>();
+            services.AddScoped<ERP.Application.Core.Auth.Commands.RolePermissions.AssignMultiplePermissionsToRole>();
             services.AddScoped<ERP.Application.Core.Auth.Commands.RolePermissions.RemovePermissionFromRole>();
 
             // RolePermission Queries
@@ -188,7 +195,6 @@ namespace ERP.API.Extensions
             // Supplier Queries (Purchases)
             services.AddScoped<GetSupplierById>();
             services.AddScoped<GetAllSuppliers>();
-            // services.AddScoped<GetSuppliersByName>(); // Comentado temporalmente
             services.AddScoped<ISupplierQueryHandler, SupplierQueryHandler>();
 
             // SalesOrder Commands (Sales)
@@ -218,6 +224,11 @@ namespace ERP.API.Extensions
             services.AddScoped<IRepositoryBase<Supplier>, RepositoryBase<Supplier>>();
             services.AddScoped<IRepositoryBase<SalesOrder>, RepositoryBase<SalesOrder>>();
             services.AddScoped<IRepositoryBase<UserTypes>, RepositoryBase<UserTypes>>();
+            services.AddScoped<IRepositoryBase<UserRole>, RepositoryBase<UserRole>>();
+            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+
+            // Services
+            services.AddScoped<UserMeService>();
 
             return services;
         }

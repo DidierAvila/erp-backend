@@ -70,8 +70,7 @@ namespace ERP.Application.Core.Auth.Commands.Authentication
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.GivenName, user.Name),
-                //new Claim(ClaimTypes.Surname, user.LastName),
-                //new Claim(ClaimTypes.Role, user.Roles),
+                new Claim(ClaimTypes.Role, user.UserTypeId.ToString())
             };
 
             // Crear el token

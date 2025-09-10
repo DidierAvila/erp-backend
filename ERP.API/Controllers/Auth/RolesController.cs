@@ -16,6 +16,7 @@ namespace ERP.API.Controllers.Auth
         private readonly IRoleQueryHandler _roleQueryHandler;
         private readonly GetPermissionsByRole _getPermissionsByRole;
         private readonly AssignPermissionToRole _assignPermissionToRole;
+        private readonly AssignMultiplePermissionsToRole _assignMultiplePermissionsToRole;
         private readonly RemovePermissionFromRole _removePermissionFromRole;
 
         public RolesController(
@@ -23,11 +24,13 @@ namespace ERP.API.Controllers.Auth
             IRoleQueryHandler roleQueryHandler,
             GetPermissionsByRole getPermissionsByRole,
             AssignPermissionToRole assignPermissionToRole,
+            AssignMultiplePermissionsToRole assignMultiplePermissionsToRole,
             RemovePermissionFromRole removePermissionFromRole)
         {
             _roleCommandHandler = roleCommandHandler;
             _roleQueryHandler = roleQueryHandler;
             _getPermissionsByRole = getPermissionsByRole;
+            _assignMultiplePermissionsToRole = assignMultiplePermissionsToRole;
             _assignPermissionToRole = assignPermissionToRole;
             _removePermissionFromRole = removePermissionFromRole;
         }
@@ -81,7 +84,12 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
-        // GET: api/Roles/{id}
+        /// <summary>
+        /// Obtiene un rol por ID incluyendo sus permisos asociados
+        /// </summary>
+        /// <param name="id">ID del rol</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Rol con sus permisos asociados</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<RoleDto>> GetRoleById(Guid id, CancellationToken cancellationToken)
         {
@@ -213,6 +221,56 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
+        // POST: api/Roles/{roleId}/permissions/bulk
+        /// <summary>
+        /// Asignar múltiples permisos a un rol de una sola vez
+        /// Mejora la experiencia de usuario al permitir asignaciones masivas
+        /// </summary>
+        /// <param name="roleId">ID del rol</param>
+        /// <param name="request">Lista de IDs de permisos a asignar</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Resultado detallado de la asignación múltiple</returns>
+        [HttpPost("{roleId}/permissions/bulk")]
+        public async Task<ActionResult<MultiplePermissionAssignmentResult>> AssignMultiplePermissionsToRole(
+            Guid roleId, 
+            [FromBody] List<Guid> permissionIds, 
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var request = new AssignMultiplePermissionsToRoleDto 
+                { 
+                    RoleId = roleId, 
+                    PermissionIds = permissionIds 
+                };
+                
+                var result = await _assignMultiplePermissionsToRole.HandleAsync(request, cancellationToken);
+                
+                if (result.HasErrors)
+                {
+                    return BadRequest(new 
+                    { 
+                        message = "La asignación se completó con algunos errores", 
+                        result = result 
+                    });
+                }
+                
+                return Ok(new 
+                { 
+                    message = "Permisos asignados exitosamente", 
+                    result = result 
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", details = ex.Message });
+            }
+        }
+
         // DELETE: api/Roles/{roleId}/permissions/{permissionId}
         /// <summary>
         /// Remover un permiso específico de un rol
@@ -228,6 +286,36 @@ namespace ERP.API.Controllers.Auth
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", details = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Remueve múltiples permisos de un rol
+        /// </summary>
+        /// <param name="roleId">ID del rol</param>
+        /// <param name="permissionIds">Lista de IDs de permisos a remover</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Resultado de la remoción múltiple</returns>
+        [HttpDelete("{roleId}/permissions")]
+        public async Task<ActionResult<MultiplePermissionRemovalResult>> RemoveMultiplePermissionsFromRole(
+            Guid roleId,
+            [FromBody] List<Guid> permissionIds,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var command = new RemoveMultiplePermissionsFromRole
+                {
+                    RoleId = roleId,
+                    PermissionIds = permissionIds
+                };
+
+                var result = await _roleCommandHandler.RemoveMultiplePermissionsFromRole(command, cancellationToken);
+                return Ok(result);
             }
             catch (Exception ex)
             {

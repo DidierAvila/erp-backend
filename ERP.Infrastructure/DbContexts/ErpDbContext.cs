@@ -29,6 +29,8 @@ public partial class ErpDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserRole> UserRoles { get; set; }
+
     public virtual DbSet<UserTypes> UserTypes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -148,7 +150,7 @@ public partial class ErpDbContext : DbContext
                 .HasColumnName("Id");
             entity.Property(e => e.Expires).HasColumnName("Expires");
             entity.Property(e => e.SessionToken)
-                .HasMaxLength(255)
+                .HasMaxLength(1000)
                 .IsUnicode(false)
                 .HasColumnName("SessionToken");
             entity.Property(e => e.UserId).HasColumnName("UserId");
@@ -205,20 +207,17 @@ public partial class ErpDbContext : DbContext
                 .HasConstraintName("FK_Users_UserTypes");
 
             entity.HasMany(d => d.Roles).WithMany(p => p.Users)
-                .UsingEntity<Dictionary<string, object>>(
-                    "UserRole",
-                    r => r.HasOne<Role>().WithMany()
-                        .HasForeignKey("RoleId")
+                .UsingEntity<UserRole>(
+                    l => l.HasOne<Role>(ur => ur.Role).WithMany()
+                        .HasForeignKey(ur => ur.RoleId)
                         .HasConstraintName("FK__UserRoles__RoleId__4F7CD00D"),
-                    l => l.HasOne<User>().WithMany()
-                        .HasForeignKey("UserId")
+                    r => r.HasOne<User>(ur => ur.User).WithMany()
+                        .HasForeignKey(ur => ur.UserId)
                         .HasConstraintName("FK__UserRoles__UserId__4E88ABD4"),
                     j =>
                     {
-                        j.HasKey("UserId", "RoleId").HasName("PK__UserRoles__6EDEA1531A203E84");
+                        j.HasKey(ur => new { ur.UserId, ur.RoleId }).HasName("PK__UserRoles__6EDEA1531A203E84");
                         j.ToTable("UserRoles", "Auth");
-                        j.IndexerProperty<Guid>("UserId").HasColumnName("UserId");
-                        j.IndexerProperty<Guid>("RoleId").HasColumnName("RoleId");
                     });
         });
 
