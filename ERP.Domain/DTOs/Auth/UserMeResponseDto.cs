@@ -16,7 +16,7 @@ namespace ERP.Domain.DTOs.Auth
         public UserBasicInfoDto User { get; set; } = new();
         
         // Navegación dinámica basada en permisos
-        public List<NavigationItemDto> Navigation { get; set; } = new();
+        public List<ERP.Domain.DTOs.Navigation.NavigationItemDto> Navigation { get; set; } = new();
         
         // Permisos agrupados por recurso para acciones específicas
         public Dictionary<string, ResourcePermissionsDto> Permissions { get; set; } = new();
@@ -30,16 +30,6 @@ namespace ERP.Domain.DTOs.Auth
         public string Role { get; set; } = null!;
         public string RoleId { get; set; } = null!;
         public string? Avatar { get; set; }
-    }
-
-    public class NavigationItemDto
-    {
-        public string Id { get; set; } = null!;
-        public string Label { get; set; } = null!;
-        public string? Icon { get; set; }
-        public string? Route { get; set; }
-        public int Order { get; set; }
-        public List<NavigationItemDto>? Children { get; set; }
     }
 
     public class ResourcePermissionsDto

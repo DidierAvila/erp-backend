@@ -46,7 +46,7 @@ namespace ERP.Application.Mappings
                 });
 
             CreateMap<User, UserSummaryDto>()
-                .ForMember(dest => dest.UserTypeName, opt => opt.MapFrom(src => src.UserType.Name))
+                .ForMember(dest => dest.UserTypeName, opt => opt.MapFrom(src => src.UserType != null ? src.UserType.Name : string.Empty))
                 .ForMember(dest => dest.RoleCount, opt => opt.MapFrom(src => src.Roles.Count))
                 .ForMember(dest => dest.LastLoginAt, opt => opt.Ignore()); // Se puede mapear desde Sessions si es necesario
 

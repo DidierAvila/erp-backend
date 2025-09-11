@@ -25,6 +25,16 @@ namespace ERP.Domain.DTOs.Inventory
         public string? Notes { get; set; }
     }
 
+    public class UpdateStockMovementDto
+    {
+        public string MovementType { get; set; } = null!;
+        public int ProductId { get; set; }
+        public int? FromLocationId { get; set; }
+        public int? ToLocationId { get; set; }
+        public int Quantity { get; set; }
+        public string? Notes { get; set; }
+    }
+
     public class StockMovementReportDto
     {
         public int ProductId { get; set; }

@@ -1,8 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ERP.Application.Utils;
 using ERP.Domain.DTOs;
-using ERP.Domain.Entities;
 using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
 using Microsoft.AspNetCore.Identity.Data;
@@ -16,13 +16,15 @@ namespace ERP.Application.Core.Auth.Commands.Authentication
     public class LoginCommand : ILoginCommand
     {
         private readonly IRepositoryBase<User> _userRepository;
+        private readonly IRepositoryBase<Domain.Entities.Auth.UserTypes> _userTypeRepository;
         private readonly IRepositoryBase<Session> _sessionRepository;
         private readonly ILogger<LoginCommand> _logger;
         private readonly IConfiguration _configuration;
 
-        public LoginCommand(IRepositoryBase<User> userRepository, IRepositoryBase<Session> sessionRepository, IConfiguration configuration, ILogger<LoginCommand> logger) 
+        public LoginCommand(IRepositoryBase<User> userRepository, IRepositoryBase<Session> sessionRepository, IConfiguration configuration, ILogger<LoginCommand> logger, IRepositoryBase<Domain.Entities.Auth.UserTypes> userTypeRepository) 
         {
             _userRepository = userRepository;
+            _userTypeRepository = userTypeRepository;
             _sessionRepository = sessionRepository;
             _configuration = configuration;
             _logger = logger;
@@ -39,6 +41,7 @@ namespace ERP.Application.Core.Auth.Commands.Authentication
                 bool isPasswordValid = BC.Verify(autorizacion.Password, CurrentUser.Password);
                 if (isPasswordValid)
                 {
+                    CurrentUser.UserType = await _userTypeRepository.Find(x => x.Id == CurrentUser.UserTypeId, cancellationToken);
                     _logger.LogInformation("Login: success");
                     string CurrentToken = await GetToken(CurrentUser, cancellationToken);
                     LoginResponse loginResponse = new()
@@ -67,10 +70,11 @@ namespace ERP.Application.Core.Auth.Commands.Authentication
             // Crear los claims
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.GivenName, user.Name),
-                new Claim(ClaimTypes.Role, user.UserTypeId.ToString())
+                new Claim(CustomClaimTypes.UserId, user.Id.ToString()),
+                new Claim(CustomClaimTypes.UserName, user.Name),
+                new Claim(CustomClaimTypes.UserEmail, user.Email),
+                new Claim(CustomClaimTypes.UserTypeId, user.UserTypeId.ToString()),
+                new Claim(CustomClaimTypes.UserTypeName, user.UserType!.Name),
             };
 
             // Crear el token

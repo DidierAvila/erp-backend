@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Auth
 {
+    /// <summary>
+    /// Controlador para gestionar los usuarios del sistema.
+    /// </summary>
     [ApiController]
     [Route("api/auth/[controller]")]
     public class UsersController : ControllerBase
@@ -15,6 +18,12 @@ namespace ERP.API.Controllers.Auth
         private readonly IUserCommandHandler _userCommandHandler;
         private readonly IUserQueryHandler _userQueryHandler;
 
+        /// <summary>
+        /// Constructor del controlador UsersController
+        /// </summary>
+        /// <param name="userCommandHandler"></param>
+        /// <param name="userQueryHandler"></param>
+        /// <param name="logger"></param>
         public UsersController(IUserCommandHandler userCommandHandler, IUserQueryHandler userQueryHandler, ILogger<UsersController> logger)
         {
             _userCommandHandler = userCommandHandler;
@@ -194,6 +203,12 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
+        /// <summary>
+        /// Elimina un usuario por su ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
@@ -216,6 +231,13 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
+        /// <summary>
+        /// Cambia la contraseña de un usuario
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="changePasswordDto"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPut("{id}/change-password")]
         public async Task<ActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto changePasswordDto, CancellationToken cancellationToken)
         {
@@ -402,11 +424,11 @@ namespace ERP.API.Controllers.Auth
                 }
                 else if (result.AssignedRoles.Count > 0)
                 {
-                    return Ok(result); // Éxito parcial
+                    return Ok(result);
                 }
                 else
                 {
-                    return BadRequest(result); // Falló todo
+                    return BadRequest(result);
                 }
             }
             catch (Exception ex)

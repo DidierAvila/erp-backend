@@ -2,6 +2,7 @@ using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
 using ERP.Infrastructure.DbContexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ERP.Infrastructure.Repositories
 {
@@ -11,10 +12,12 @@ namespace ERP.Infrastructure.Repositories
     public class UserRoleRepository : IUserRoleRepository
     {
         private readonly ErpDbContext _context;
+        private readonly ILogger<UserRoleRepository> _logger;
 
-        public UserRoleRepository(ErpDbContext context)
+        public UserRoleRepository(ErpDbContext context, ILogger<UserRoleRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>

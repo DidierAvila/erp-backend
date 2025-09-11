@@ -23,7 +23,7 @@ namespace ERP.Application.Core.Inventory.Commands.StockMovements
 
         public async Task<StockMovementDto> HandleAsync(CreateStockMovementDto createStockMovementDto, CancellationToken cancellationToken)
         {
-            // Validations
+            // Input validations
             if (string.IsNullOrWhiteSpace(createStockMovementDto.MovementType))
                 throw new ArgumentException("Movement type is required");
 
@@ -33,17 +33,36 @@ namespace ERP.Application.Core.Inventory.Commands.StockMovements
             if (createStockMovementDto.Quantity <= 0)
                 throw new ArgumentException("Quantity must be greater than zero");
 
+            // Validate maximum quantity per movement (business rule)
+            if (createStockMovementDto.Quantity > 10000)
+                throw new ArgumentException("Quantity cannot exceed 10,000 units per movement");
+
             // Validate product exists
             var product = await _productRepository.Find(x => x.Id == createStockMovementDto.ProductId, cancellationToken);
             if (product == null)
                 throw new KeyNotFoundException("Product not found");
 
-            // Business logic: For transfers, both locations should be specified
+            // Validate movement type
             var movementType = createStockMovementDto.MovementType.ToLower();
+            var validMovementTypes = new[] { "in", "out", "transfer", "purchase", "sale", "return", "adjustment" };
+            if (!validMovementTypes.Contains(movementType))
+                throw new ArgumentException($"Invalid movement type. Valid types: {string.Join(", ", validMovementTypes)}");
+
+            // Business logic: For transfers, both locations should be specified and different
             if (movementType == "transfer")
             {
                 if (!createStockMovementDto.FromLocationId.HasValue || !createStockMovementDto.ToLocationId.HasValue)
                     throw new ArgumentException("Transfer movements require both FromLocation and ToLocation");
+                
+                if (createStockMovementDto.FromLocationId == createStockMovementDto.ToLocationId)
+                    throw new ArgumentException("FromLocation and ToLocation must be different for transfers");
+            }
+
+            // Business logic: For outbound movements, validate sufficient stock
+            if (movementType == "out" || movementType == "sale" || movementType == "adjustment")
+            {
+                if (product.CurrentStock < createStockMovementDto.Quantity)
+                    throw new InvalidOperationException($"Insufficient stock. Available: {product.CurrentStock}, Requested: {createStockMovementDto.Quantity}");
             }
 
             // Map DTO to Entity using AutoMapper

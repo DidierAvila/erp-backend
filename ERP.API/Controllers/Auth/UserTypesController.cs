@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Auth
 {
+    /// <summary>
+    /// Controlador para gestionar los tipos de usuario.
+    /// </summary>
     [ApiController]
     [Route("api/auth/[controller]")]
     public class UserTypesController : ControllerBase
@@ -14,6 +17,12 @@ namespace ERP.API.Controllers.Auth
         private readonly IUserTypeQueryHandler _queryHandler;
         private readonly ILogger<UserTypesController> _logger;
 
+        /// <summary>
+        /// Constructor del controlador UserTypesController
+        /// </summary>
+        /// <param name="commandHandler"></param>
+        /// <param name="queryHandler"></param>
+        /// <param name="logger"></param>
         public UserTypesController(
             IUserTypeCommandHandler commandHandler, 
             IUserTypeQueryHandler queryHandler,

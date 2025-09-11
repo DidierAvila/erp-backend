@@ -8,32 +8,31 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Auth
 {
+    /// <summary>
+    /// Controlador para gestionar roles y sus permisos.
+    /// </summary>
+    /// <param name="roleCommandHandler"></param>
+    /// <param name="roleQueryHandler"></param>
+    /// <param name="getPermissionsByRole"></param>
+    /// <param name="assignPermissionToRole"></param>
+    /// <param name="assignMultiplePermissionsToRole"></param>
+    /// <param name="removePermissionFromRole"></param>
     [Route("api/[controller]")]
     [ApiController]
-    public class RolesController : ControllerBase
+    public class RolesController(
+        IRoleCommandHandler roleCommandHandler,
+        IRoleQueryHandler roleQueryHandler,
+        GetPermissionsByRole getPermissionsByRole,
+        AssignPermissionToRole assignPermissionToRole,
+        AssignMultiplePermissionsToRole assignMultiplePermissionsToRole,
+        RemovePermissionFromRole removePermissionFromRole) : ControllerBase
     {
-        private readonly IRoleCommandHandler _roleCommandHandler;
-        private readonly IRoleQueryHandler _roleQueryHandler;
-        private readonly GetPermissionsByRole _getPermissionsByRole;
-        private readonly AssignPermissionToRole _assignPermissionToRole;
-        private readonly AssignMultiplePermissionsToRole _assignMultiplePermissionsToRole;
-        private readonly RemovePermissionFromRole _removePermissionFromRole;
-
-        public RolesController(
-            IRoleCommandHandler roleCommandHandler, 
-            IRoleQueryHandler roleQueryHandler,
-            GetPermissionsByRole getPermissionsByRole,
-            AssignPermissionToRole assignPermissionToRole,
-            AssignMultiplePermissionsToRole assignMultiplePermissionsToRole,
-            RemovePermissionFromRole removePermissionFromRole)
-        {
-            _roleCommandHandler = roleCommandHandler;
-            _roleQueryHandler = roleQueryHandler;
-            _getPermissionsByRole = getPermissionsByRole;
-            _assignMultiplePermissionsToRole = assignMultiplePermissionsToRole;
-            _assignPermissionToRole = assignPermissionToRole;
-            _removePermissionFromRole = removePermissionFromRole;
-        }
+        private readonly IRoleCommandHandler _roleCommandHandler = roleCommandHandler;
+        private readonly IRoleQueryHandler _roleQueryHandler = roleQueryHandler;
+        private readonly GetPermissionsByRole _getPermissionsByRole = getPermissionsByRole;
+        private readonly AssignPermissionToRole _assignPermissionToRole = assignPermissionToRole;
+        private readonly AssignMultiplePermissionsToRole _assignMultiplePermissionsToRole = assignMultiplePermissionsToRole;
+        private readonly RemovePermissionFromRole _removePermissionFromRole = removePermissionFromRole;
 
         /// <summary>
         /// Obtiene una lista paginada de roles con filtros opcionales
@@ -231,7 +230,12 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
-        // DELETE: api/Roles/{id}
+        /// <summary>
+        /// Elimina un rol por ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteRole(Guid id, CancellationToken cancellationToken)
         {
@@ -305,7 +309,7 @@ namespace ERP.API.Controllers.Auth
         /// Mejora la experiencia de usuario al permitir asignaciones masivas
         /// </summary>
         /// <param name="roleId">ID del rol</param>
-        /// <param name="request">Lista de IDs de permisos a asignar</param>
+        /// <param name="permissionIds">DTO con lista de IDs de permisos a asignar</param>
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Resultado detallado de la asignación múltiple</returns>
         [HttpPost("{roleId}/permissions/bulk")]
@@ -328,15 +332,15 @@ namespace ERP.API.Controllers.Auth
                 {
                     return BadRequest(new 
                     { 
-                        message = "La asignación se completó con algunos errores", 
-                        result = result 
+                        message = "La asignación se completó con algunos errores",
+                        result
                     });
                 }
                 
                 return Ok(new 
                 { 
-                    message = "Permisos asignados exitosamente", 
-                    result = result 
+                    message = "Permisos asignados exitosamente",
+                    result
                 });
             }
             catch (KeyNotFoundException ex)

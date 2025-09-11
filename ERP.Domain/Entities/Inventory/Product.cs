@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using ERP.Domain.Entities.Sales;
 using ERP.Domain.Entities.Purchases;
+using ERP.Domain.Entities.Sales;
 
 namespace ERP.Domain.Entities.Inventory;
 
@@ -9,7 +7,7 @@ public partial class Product
 {
     public int Id { get; set; }
 
-    public string ProductName { get; set; } = null!;
+    public required string ProductName { get; set; }
 
     public string Sku { get; set; } = null!;
 

@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Purchases
 {
+    /// <summary>
+    /// Controlador para gestionar proveedores.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class SuppliersController : ControllerBase
@@ -13,6 +16,12 @@ namespace ERP.API.Controllers.Purchases
         private readonly ISupplierQueryHandler _queryHandler;
         private readonly ILogger<SuppliersController> _logger;
 
+        /// <summary>
+        /// Constructor del controlador SuppliersController
+        /// </summary>
+        /// <param name="commandHandler"></param>
+        /// <param name="queryHandler"></param>
+        /// <param name="logger"></param>
         public SuppliersController(
             ISupplierCommandHandler commandHandler,
             ISupplierQueryHandler queryHandler,
@@ -23,6 +32,11 @@ namespace ERP.API.Controllers.Purchases
             _logger = logger;
         }
 
+        /// <summary>
+        /// Crea un nuevo proveedor
+        /// </summary>
+        /// <param name="createSupplierDto"></param>
+        /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,12 +49,12 @@ namespace ERP.API.Controllers.Purchases
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning("Invalid supplier data: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Invalid supplier data: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning("Supplier creation failed: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Supplier creation failed: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
@@ -50,6 +64,12 @@ namespace ERP.API.Controllers.Purchases
             }
         }
 
+        /// <summary>
+        /// Actualiza un proveedor existente
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="updateSupplierDto"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -63,17 +83,17 @@ namespace ERP.API.Controllers.Purchases
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning("Invalid supplier data: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Invalid supplier data: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning("Supplier not found: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Supplier not found: {Message}", ex.Message);
                 return NotFound(ex.Message);
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning("Supplier update failed: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Supplier update failed: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
@@ -83,6 +103,11 @@ namespace ERP.API.Controllers.Purchases
             }
         }
 
+        /// <summary>
+        /// Elimina un proveedor por ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -92,7 +117,7 @@ namespace ERP.API.Controllers.Purchases
             try
             {
                 var result = await _commandHandler.DeleteSupplier(id, CancellationToken.None);
-                
+
                 if (!result)
                 {
                     return NotFound($"Supplier with ID {id} not found");
@@ -102,7 +127,7 @@ namespace ERP.API.Controllers.Purchases
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning("Supplier deletion failed: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Supplier deletion failed: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
@@ -112,6 +137,11 @@ namespace ERP.API.Controllers.Purchases
             }
         }
 
+        /// <summary>
+        /// Obtiene un proveedor por ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -135,6 +165,10 @@ namespace ERP.API.Controllers.Purchases
             }
         }
 
+        /// <summary>
+        /// Obtiene todos los proveedores
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<SupplierDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SupplierDto>>> GetAllSuppliers()
@@ -151,6 +185,11 @@ namespace ERP.API.Controllers.Purchases
             }
         }
 
+        /// <summary>
+        /// Busca proveedores por nombre (parcial o completo)
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         [HttpGet("search")]
         [ProducesResponseType(typeof(IEnumerable<SupplierDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SupplierDto>>> GetSuppliersByName([FromQuery] string? name)

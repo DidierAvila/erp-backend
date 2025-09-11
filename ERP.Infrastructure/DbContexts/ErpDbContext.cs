@@ -1,5 +1,6 @@
-﻿using ERP.Domain.Entities;
 using ERP.Domain.Entities.Auth;
+using ERP.Domain.Entities.Finance;
+using ERP.Domain.Entities.Inventory;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Infrastructure.DbContexts;
@@ -15,13 +16,13 @@ public partial class ErpDbContext : DbContext
     {
     }
 
-    public virtual DbSet<ERP.Domain.Entities.Auth.Account> AuthAccounts { get; set; }
+    public virtual DbSet<Domain.Entities.Auth.Account> AuthAccounts { get; set; }
 
-    public virtual DbSet<ERP.Domain.Entities.Finance.Account> FinanceAccounts { get; set; }
+    public virtual DbSet<Domain.Entities.Finance.Account> FinanceAccounts { get; set; }
 
-    public virtual DbSet<ERP.Domain.Entities.Auth.Permission> Permissions { get; set; }
+    public virtual DbSet<Permission> Permissions { get; set; }
 
-    public virtual DbSet<ERP.Domain.Entities.Auth.Role> Roles { get; set; }
+    public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<RolePermission> RolePermissions { get; set; }
 
@@ -33,9 +34,15 @@ public partial class ErpDbContext : DbContext
 
     public virtual DbSet<UserTypes> UserTypes { get; set; }
 
+    public virtual DbSet<Product> Products { get; set; }
+
+    public virtual DbSet<InventoryLocation> InventoryLocations { get; set; }
+
+    public virtual DbSet<StockMovement> StockMovements { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Account>(entity =>
+        modelBuilder.Entity<Domain.Entities.Auth.Account>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Accounts__3213E83FFFBE8431");
 
@@ -307,6 +314,97 @@ public partial class ErpDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__RolePermissions__Permission");
         });
+
+        // Inventory Entities Configuration
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Products__3213E83F");
+
+            entity.ToTable("Products", "Inventory");
+
+            entity.HasIndex(e => e.Sku, "UQ__Products__CA1ECF0C").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.ProductName)
+                .HasMaxLength(255)
+                .IsRequired()
+                .HasColumnName("ProductName");
+            entity.Property(e => e.Sku)
+                .HasMaxLength(100)
+                .IsRequired()
+                .HasColumnName("Sku");
+            entity.Property(e => e.Description)
+                .HasMaxLength(1000)
+                .HasColumnName("Description");
+            entity.Property(e => e.UnitOfMeasure)
+                .HasMaxLength(50)
+                .IsRequired()
+                .HasColumnName("UnitOfMeasure");
+            entity.Property(e => e.CurrentStock)
+                 .HasDefaultValue(0)
+                 .HasColumnName("CurrentStock");
+         });
+
+         modelBuilder.Entity<InventoryLocation>(entity =>
+         {
+             entity.HasKey(e => e.Id).HasName("PK__InventoryLocations__3213E83F");
+
+             entity.ToTable("InventoryLocations", "Inventory");
+
+             entity.HasIndex(e => e.LocationName, "UQ__InventoryLocations__LocationName").IsUnique();
+
+             entity.Property(e => e.Id)
+                 .HasColumnName("Id");
+             entity.Property(e => e.LocationName)
+                 .HasMaxLength(255)
+                 .IsRequired()
+                 .HasColumnName("LocationName");
+             entity.Property(e => e.Description)
+                  .HasMaxLength(1000)
+                  .HasColumnName("Description");
+          });
+
+          modelBuilder.Entity<StockMovement>(entity =>
+          {
+              entity.HasKey(e => e.Id).HasName("PK__StockMovements__3213E83F");
+
+              entity.ToTable("StockMovements", "Inventory");
+
+              entity.Property(e => e.Id)
+                  .HasColumnName("Id");
+              entity.Property(e => e.ProductId)
+                  .IsRequired()
+                  .HasColumnName("ProductId");
+              entity.Property(e => e.MovementType)
+                  .HasMaxLength(50)
+                  .IsRequired()
+                  .HasColumnName("MovementType");
+              entity.Property(e => e.Quantity)
+                  .IsRequired()
+                  .HasColumnName("Quantity");
+              entity.Property(e => e.MovementDate)
+                  .IsRequired()
+                  .HasColumnName("MovementDate");
+
+              entity.HasOne(d => d.Product)
+                  .WithMany(p => p.StockMovements)
+                  .HasForeignKey(d => d.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .HasConstraintName("FK_StockMovements_Products");
+
+              entity.HasOne(d => d.FromLocation)
+                  .WithMany(p => p.StockMovementFromLocations)
+                  .HasForeignKey(d => d.FromLocationId)
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .HasConstraintName("FK_StockMovements_FromLocation");
+
+              entity.HasOne(d => d.ToLocation)
+                  .WithMany(p => p.StockMovementToLocations)
+                  .HasForeignKey(d => d.ToLocationId)
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .HasConstraintName("FK_StockMovements_ToLocation");
+          });
 
         OnModelCreatingPartial(modelBuilder);
     }

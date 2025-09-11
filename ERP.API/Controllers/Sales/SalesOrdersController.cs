@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Sales
 {
+    /// <summary>
+    /// Controlador para gestionar órdenes de venta.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class SalesOrdersController : ControllerBase
@@ -13,6 +16,12 @@ namespace ERP.API.Controllers.Sales
         private readonly ISalesOrderQueryHandler _queryHandler;
         private readonly ILogger<SalesOrdersController> _logger;
 
+        /// <summary>
+        /// Constructor del controlador SalesOrdersController
+        /// </summary>
+        /// <param name="commandHandler"></param>
+        /// <param name="queryHandler"></param>
+        /// <param name="logger"></param>
         public SalesOrdersController(
             ISalesOrderCommandHandler commandHandler,
             ISalesOrderQueryHandler queryHandler,
@@ -23,6 +32,11 @@ namespace ERP.API.Controllers.Sales
             _logger = logger;
         }
 
+        /// <summary>
+        /// Crea una nueva orden de venta
+        /// </summary>
+        /// <param name="createSalesOrderDto"></param>
+        /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(SalesOrderDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,12 +49,12 @@ namespace ERP.API.Controllers.Sales
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning("Invalid sales order data: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Invalid sales order data: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning("Related entity not found: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Related entity not found: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
@@ -50,6 +64,12 @@ namespace ERP.API.Controllers.Sales
             }
         }
 
+        /// <summary>
+        /// Actualiza una orden de venta existente
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="updateSalesOrderDto"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(SalesOrderDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -63,12 +83,12 @@ namespace ERP.API.Controllers.Sales
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning("Invalid sales order data: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Invalid sales order data: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning("Sales order not found: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Sales order not found: {Message}", ex.Message);
                 return NotFound(ex.Message);
             }
             catch (Exception ex)
@@ -78,6 +98,11 @@ namespace ERP.API.Controllers.Sales
             }
         }
 
+        /// <summary>
+        /// Elimina una orden de venta por ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -87,7 +112,7 @@ namespace ERP.API.Controllers.Sales
             try
             {
                 var result = await _commandHandler.DeleteSalesOrder(id, CancellationToken.None);
-                
+
                 if (!result)
                 {
                     return NotFound($"Sales order with ID {id} not found");
@@ -97,7 +122,7 @@ namespace ERP.API.Controllers.Sales
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning("Sales order deletion failed: {Message}", ex.Message);
+                _logger.LogWarning(ex, "Sales order deletion failed: {Message}", ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
@@ -107,6 +132,11 @@ namespace ERP.API.Controllers.Sales
             }
         }
 
+        /// <summary>
+        /// Obtiene una orden de venta por ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(SalesOrderDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -130,6 +160,10 @@ namespace ERP.API.Controllers.Sales
             }
         }
 
+        /// <summary>
+        /// Obtiene todas las órdenes de venta
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<SalesOrderDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SalesOrderDto>>> GetAllSalesOrders()
@@ -146,6 +180,11 @@ namespace ERP.API.Controllers.Sales
             }
         }
 
+        /// <summary>
+        /// Obtiene todas las órdenes de venta de un cliente específico
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <returns></returns>
         [HttpGet("customer/{customerId}")]
         [ProducesResponseType(typeof(IEnumerable<SalesOrderDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SalesOrderDto>>> GetSalesOrdersByCustomer(Guid customerId)
@@ -162,6 +201,11 @@ namespace ERP.API.Controllers.Sales
             }
         }
 
+        /// <summary>
+        /// Obtiene todas las órdenes de venta con un estado específico
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
         [HttpGet("status/{status}")]
         [ProducesResponseType(typeof(IEnumerable<SalesOrderDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SalesOrderDto>>> GetSalesOrdersByStatus(string status)
@@ -178,6 +222,10 @@ namespace ERP.API.Controllers.Sales
             }
         }
 
+        /// <summary>
+        /// Obtiene los posibles estados de una orden de venta
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("statuses")]
         [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<string>> GetOrderStatuses()

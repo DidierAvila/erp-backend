@@ -77,7 +77,14 @@ builder.Services.AddSwaggerGen(options =>
 
 // Configure Entity Framework
 builder.Services.AddDbContext<ErpDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+    {
+        sqlOptions.CommandTimeout(120); // 2 minutos timeout para comandos
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+    }));
 
 // Configure extensions
 builder.Services.AddApiErpExtention();

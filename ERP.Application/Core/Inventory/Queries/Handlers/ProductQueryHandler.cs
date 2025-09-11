@@ -1,4 +1,5 @@
 using ERP.Application.Core.Inventory.Queries.Products;
+using ERP.Domain.DTOs.Common;
 using ERP.Domain.DTOs.Inventory;
 
 namespace ERP.Application.Core.Inventory.Queries.Handlers
@@ -35,6 +36,16 @@ namespace ERP.Application.Core.Inventory.Queries.Handlers
         public async Task<IEnumerable<ProductDto>> GetAllProducts(CancellationToken cancellationToken)
         {
             return await _getAllProducts.HandleAsync(cancellationToken);
+        }
+
+        public async Task<PaginationResponseDto<ProductDto>> GetAllProducts(ProductFilterDto filter, CancellationToken cancellationToken = default)
+        {
+            return await _getAllProducts.HandleAsync(filter, cancellationToken);
+        }
+
+        public async Task<PaginationResponseDto<ProductDto>> GetAllProducts(int page = 1, int pageSize = 10, string? sortBy = null, string? productName = null, CancellationToken cancellationToken = default)
+        {
+            return await _getAllProducts.HandleAsync(page, pageSize, sortBy, productName, cancellationToken);
         }
 
         public async Task<IEnumerable<ProductStockDto>> GetLowStockProducts(CancellationToken cancellationToken)

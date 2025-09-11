@@ -1,13 +1,15 @@
 using ERP.Application.Core.Auth.Commands.Handlers;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Application.Core.Auth.Queries.RolePermissions;
-using ERP.Application.Services;
 using ERP.Domain.DTOs.Auth;
 using ERP.Domain.DTOs.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Auth
 {
+    /// <summary>
+    /// Controlador para gestionar los permisos del sistema.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class PermissionsController : ControllerBase
@@ -15,18 +17,21 @@ namespace ERP.API.Controllers.Auth
         private readonly IPermissionCommandHandler _commandHandler;
         private readonly IPermissionQueryHandler _queryHandler;
         private readonly GetRolesByPermission _getRolesByPermission;
-        private readonly PermissionSeederService _permissionSeederService;
 
+        /// <summary>
+        /// Constructor del controlador PermissionsController
+        /// </summary>
+        /// <param name="commandHandler"></param>
+        /// <param name="queryHandler"></param>
+        /// <param name="getRolesByPermission"></param>
         public PermissionsController(
             IPermissionCommandHandler commandHandler, 
             IPermissionQueryHandler queryHandler,
-            GetRolesByPermission getRolesByPermission,
-            PermissionSeederService permissionSeederService)
+            GetRolesByPermission getRolesByPermission)
         {
             _commandHandler = commandHandler;
             _queryHandler = queryHandler;
             _getRolesByPermission = getRolesByPermission;
-            _permissionSeederService = permissionSeederService;
         }
 
         /// <summary>
@@ -215,42 +220,6 @@ namespace ERP.API.Controllers.Auth
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error interno del servidor", details = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Ejecuta el seeding de todos los permisos definidos en AdminPermissionsHelper
-        /// Este endpoint es para uso administrativo durante la configuración inicial del sistema
-        /// </summary>
-        [HttpPost("seed-admin-permissions")]
-        public async Task<ActionResult<PermissionSeederResult>> SeedAdminPermissions(CancellationToken cancellationToken)
-        {
-            try
-            {
-                var result = await _permissionSeederService.SeedAdminPermissionsAsync(cancellationToken);
-                
-                if (result.HasErrors)
-                {
-                    return BadRequest(new 
-                    { 
-                        message = "El seeding se completó con errores", 
-                        result = result 
-                    });
-                }
-                
-                return Ok(new 
-                { 
-                    message = "Seeding de permisos completado exitosamente", 
-                    result = result 
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = "Error durante el seeding de permisos", 
-                    details = ex.Message 
-                });
             }
         }
     }

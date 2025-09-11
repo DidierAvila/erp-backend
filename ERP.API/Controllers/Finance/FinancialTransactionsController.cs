@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Finance
 {
+    /// <summary>
+    /// Controlador para gestionar transacciones financieras.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class FinancialTransactionsController : ControllerBase
@@ -12,6 +15,11 @@ namespace ERP.API.Controllers.Finance
         private readonly IFinancialTransactionCommandHandler _commandHandler;
         private readonly IFinancialTransactionQueryHandler _queryHandler;
 
+        /// <summary>
+        /// Constructor del controlador FinancialTransactionsController
+        /// </summary>
+        /// <param name="commandHandler"></param>
+        /// <param name="queryHandler"></param>
         public FinancialTransactionsController(
             IFinancialTransactionCommandHandler commandHandler,
             IFinancialTransactionQueryHandler queryHandler)
@@ -20,7 +28,11 @@ namespace ERP.API.Controllers.Finance
             _queryHandler = queryHandler;
         }
 
-        // GET: api/FinancialTransactions
+        /// <summary>
+        /// Obtiene todas las transacciones financieras
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FinancialTransactionDto>>> GetAllTransactions(CancellationToken cancellationToken)
         {
@@ -35,7 +47,12 @@ namespace ERP.API.Controllers.Finance
             }
         }
 
-        // GET: api/FinancialTransactions/{id}
+        /// <summary>
+        /// Obtiene una transacción financiera por ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<FinancialTransactionDto>> GetTransactionById(int id, CancellationToken cancellationToken)
         {
@@ -53,7 +70,13 @@ namespace ERP.API.Controllers.Finance
             }
         }
 
-        // GET: api/FinancialTransactions/by-type/{type}
+
+        /// <summary>
+        /// Obtiene una transacción financiera por tipo
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpGet("by-type/{type}")]
         public async Task<ActionResult<IEnumerable<FinancialTransactionDto>>> GetTransactionsByType(string type, CancellationToken cancellationToken)
         {
@@ -68,25 +91,12 @@ namespace ERP.API.Controllers.Finance
             }
         }
 
-        // GET: api/FinancialTransactions/summary?startDate=2024-01-01&endDate=2024-12-31
-        [HttpGet("summary")]
-        public async Task<ActionResult<FinancialSummaryDto>> GetFinancialSummary(
-            [FromQuery] DateOnly startDate, 
-            [FromQuery] DateOnly endDate, 
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var summary = await _queryHandler.GetFinancialSummary(startDate, endDate, cancellationToken);
-                return Ok(summary);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        // POST: api/FinancialTransactions
+        /// <summary>
+        /// Crea una nueva transacción financiera
+        /// </summary>
+        /// <param name="createDto"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<FinancialTransactionDto>> CreateTransaction([FromBody] CreateFinancialTransactionDto createDto, CancellationToken cancellationToken)
         {
@@ -105,7 +115,13 @@ namespace ERP.API.Controllers.Finance
             }
         }
 
-        // PUT: api/FinancialTransactions/{id}
+        /// <summary>
+        /// Actualiza una transacción financiera existente
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="updateDto"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<ActionResult<FinancialTransactionDto>> UpdateTransaction(int id, [FromBody] UpdateFinancialTransactionDto updateDto, CancellationToken cancellationToken)
         {
@@ -128,7 +144,12 @@ namespace ERP.API.Controllers.Finance
             }
         }
 
-        // DELETE: api/FinancialTransactions/{id}
+        /// <summary>
+        /// Elimina una transacción financiera por ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteTransaction(int id, CancellationToken cancellationToken)
         {

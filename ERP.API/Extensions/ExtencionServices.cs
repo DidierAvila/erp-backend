@@ -1,8 +1,8 @@
-ï»¿using ERP.Application.Core.Auth.Commands.Authentication;
+using ERP.Application.Core.Auth.Commands.Authentication;
 using ERP.Application.Core.Auth.Commands.Handlers;
+using ERP.Application.Core.Auth.Commands.RolePermissions;
 using ERP.Application.Core.Auth.Commands.Roles;
 using ERP.Application.Core.Auth.Commands.Users;
-using ERP.Application.Core.Auth.Commands.RolePermissions;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Application.Core.Auth.Queries.Roles;
 using ERP.Application.Core.Auth.Queries.Users;
@@ -16,30 +16,37 @@ using ERP.Application.Core.Inventory.Commands.StockMovements;
 using ERP.Application.Core.Inventory.Queries.Handlers;
 using ERP.Application.Core.Inventory.Queries.Products;
 using ERP.Application.Core.Inventory.Queries.StockMovements;
-using ERP.Application.Core.Purchases.Commands.Suppliers;
 using ERP.Application.Core.Purchases.Commands.Handlers;
-using ERP.Application.Core.Purchases.Queries.Suppliers;
+using ERP.Application.Core.Purchases.Commands.Suppliers;
 using ERP.Application.Core.Purchases.Queries.Handlers;
+using ERP.Application.Core.Purchases.Queries.Suppliers;
 using ERP.Application.Core.Sales.Commands.Handlers;
 using ERP.Application.Core.Sales.Commands.SalesOrders;
 using ERP.Application.Core.Sales.Queries.Handlers;
 using ERP.Application.Core.Sales.Queries.SalesOrders;
 using ERP.Application.Mappings;
 using ERP.Application.Services;
-using ERP.Domain.Entities;
 using ERP.Domain.Entities.Auth;
 using ERP.Domain.Entities.Finance;
 using ERP.Domain.Entities.Inventory;
 using ERP.Domain.Entities.Purchases;
 using ERP.Domain.Entities.Sales;
-
 using ERP.Domain.Repositories;
 using ERP.Infrastructure.Repositories;
+using ERP.Infrastructure.Services;
 
 namespace ERP.API.Extensions
 {
+    /// <summary>
+    /// Clase estática que contiene métodos de extensión para configurar servicios en la API ERP.
+    /// </summary>
     public static class ExtencionServices
     {
+        /// <summary>
+        /// Configura los servicios necesarios para la API ERP.
+        /// </summary>
+        /// <param name="services">La colección de servicios de la aplicación.</param>
+        /// <returns>La colección de servicios configurada.</returns>
         public static IServiceCollection AddApiErpExtention(this IServiceCollection services)
         {
             // AutoMapper
@@ -95,12 +102,6 @@ namespace ERP.API.Extensions
             services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetPermissionsForDropdown>();
             services.AddScoped<IPermissionQueryHandler, PermissionQueryHandler>();
 
-            // Permission Services
-            services.AddScoped<ERP.Application.Services.PermissionSeederService>();
-
-            // System Commands
-            services.AddScoped<ERP.Application.Core.Auth.Commands.System.InitializeSystemData>();
-
             // Role Commands
             services.AddScoped<CreateRole>();
             services.AddScoped<UpdateRole>();
@@ -116,9 +117,9 @@ namespace ERP.API.Extensions
             services.AddScoped<IRoleQueryHandler, RoleQueryHandler>();
 
             // RolePermission Commands
-            services.AddScoped<ERP.Application.Core.Auth.Commands.RolePermissions.AssignPermissionToRole>();
-            services.AddScoped<ERP.Application.Core.Auth.Commands.RolePermissions.AssignMultiplePermissionsToRole>();
-            services.AddScoped<ERP.Application.Core.Auth.Commands.RolePermissions.RemovePermissionFromRole>();
+            services.AddScoped<AssignPermissionToRole>();
+            services.AddScoped<AssignMultiplePermissionsToRole>();
+            services.AddScoped<RemovePermissionFromRole>();
 
             // RolePermission Queries
             services.AddScoped<ERP.Application.Core.Auth.Queries.RolePermissions.GetAllRolePermissions>();
@@ -149,19 +150,6 @@ namespace ERP.API.Extensions
             services.AddScoped<GetStockMovementsByProduct>();
             services.AddScoped<GetStockMovementsByType>();
             services.AddScoped<IStockMovementQueryHandler, StockMovementQueryHandler>();
-
-            // InventoryLocation Commands (Inventory) - Comentado temporalmente hasta completar entidad
-            // services.AddScoped<CreateInventoryLocation>();
-            // services.AddScoped<UpdateInventoryLocation>();
-            // services.AddScoped<DeleteInventoryLocation>();
-            // services.AddScoped<IInventoryLocationCommandHandler, InventoryLocationCommandHandler>();
-
-            // InventoryLocation Queries (Inventory) - Comentado temporalmente hasta completar entidad
-            // services.AddScoped<GetInventoryLocationById>();
-            // services.AddScoped<GetAllInventoryLocations>();
-            // services.AddScoped<GetLocationsByType>();
-            // services.AddScoped<GetLocationsByParent>();
-            // services.AddScoped<IInventoryLocationQueryHandler, InventoryLocationQueryHandler>();
 
             // FinancialTransaction Commands (Finance)
             services.AddScoped<CreateFinancialTransaction>();
@@ -213,6 +201,9 @@ namespace ERP.API.Extensions
             services.AddScoped<GetSalesOrdersByStatus>();
             services.AddScoped<ISalesOrderQueryHandler, SalesOrderQueryHandler>();
 
+            // Infrastructure Services
+            services.AddScoped<DatabaseResilienceService>();
+
             // Repositories
             services.AddScoped<IRepositoryBase<User>, RepositoryBase<User>>();
             services.AddScoped<IRepositoryBase<Session>, RepositoryBase<Session>>();
@@ -221,7 +212,7 @@ namespace ERP.API.Extensions
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
             services.AddScoped<IRepositoryBase<Product>, RepositoryBase<Product>>();
             services.AddScoped<IRepositoryBase<StockMovement>, RepositoryBase<StockMovement>>();
-            // services.AddScoped<IRepositoryBase<InventoryLocation>, RepositoryBase<InventoryLocation>>(); // Comentado hasta completar entidad
+            services.AddScoped<IRepositoryBase<InventoryLocation>, RepositoryBase<InventoryLocation>>();
             services.AddScoped<IRepositoryBase<FinancialTransaction>, RepositoryBase<FinancialTransaction>>();
             services.AddScoped<IRepositoryBase<ERP.Domain.Entities.Finance.Account>, RepositoryBase<ERP.Domain.Entities.Finance.Account>>();
             services.AddScoped<IRepositoryBase<Supplier>, RepositoryBase<Supplier>>();

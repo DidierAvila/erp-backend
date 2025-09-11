@@ -23,5 +23,5 @@ public partial class User
 
     public virtual ICollection<Role> Roles { get; set; } = [];
 
-    public virtual UserTypes UserType { get; set; } = null!;
+    public virtual UserTypes? UserType { get; set; }
 }

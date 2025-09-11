@@ -10,8 +10,7 @@ namespace ERP.Application.Mappings
         {
             // Entity to DTO mappings
             CreateMap<Product, ProductDto>();
-            CreateMap<Product, ProductStockDto>()
-                .ForMember(dest => dest.MinimumStock, opt => opt.MapFrom(src => 10)); // Default minimum stock for now
+            CreateMap<Product, ProductStockDto>();
 
             // DTO to Entity mappings
             CreateMap<CreateProductDto, Product>();

@@ -1,25 +1,21 @@
 using AutoMapper;
 using ERP.Domain.DTOs.Auth;
+using ERP.Domain.DTOs.Navigation;
 using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
-using System.Text.Json;
 
 namespace ERP.Application.Services
 {
     public class UserMeService
     {
         private readonly IRepositoryBase<User> _userRepository;
-        private readonly IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> _userTypeRepository;
         private readonly IRepositoryBase<Role> _roleRepository;
         private readonly IUserRoleRepository _userRoleRepository;
         private readonly IRolePermissionRepository _rolePermissionRepository;
-        private readonly IRepositoryBase<Session> _sessionRepository;
         private readonly IRepositoryBase<Permission> _permissionRepository;
-        private readonly IMapper _mapper;
 
         public UserMeService(
             IRepositoryBase<User> userRepository,
-            IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> userTypeRepository,
             IRepositoryBase<Role> roleRepository,
             IUserRoleRepository userRoleRepository,
             IRolePermissionRepository rolePermissionRepository,
@@ -28,13 +24,10 @@ namespace ERP.Application.Services
             IMapper mapper)
         {
             _userRepository = userRepository;
-            _userTypeRepository = userTypeRepository;
             _roleRepository = roleRepository;
             _userRoleRepository = userRoleRepository;
             _rolePermissionRepository = rolePermissionRepository;
-            _sessionRepository = sessionRepository;
             _permissionRepository = permissionRepository;
-            _mapper = mapper;
         }
 
         /// <summary>
@@ -43,14 +36,24 @@ namespace ERP.Application.Services
         /// </summary>
         public async Task<UserMeResponseDto> GetUserMeAsync(Guid userId, CancellationToken cancellationToken = default)
         {
+            if (userId == Guid.Empty)
+            {
+                return new UserMeResponseDto
+                {
+                    Success = false,
+                    Data = {},
+                };
+            }
+
             var user = await _userRepository.Find(u => u.Id == userId, cancellationToken);
             if (user == null)
             {
-                throw new KeyNotFoundException($"User with ID {userId} not found");
+                return new UserMeResponseDto
+                {
+                    Success = false,
+                    Data = { },
+                };
             }
-
-            // Obtener información del tipo de usuario
-            var userType = await _userTypeRepository.Find(ut => ut.Id == user.UserTypeId, cancellationToken);
 
             // Obtener roles del usuario (solo activos)
             var userRoles = await GetUserRolesOptimizedAsync(userId, cancellationToken);
@@ -80,9 +83,24 @@ namespace ERP.Application.Services
                         RoleId = userRoles.FirstOrDefault()?.Id.ToString() ?? "0",
                         Avatar = user.Image ?? "/images/users/default.jpg"
                     },
-                    Navigation = ConvertMenusToNavigation(navigation),
+                    Navigation = navigation.Select(menu => MapMenuToNavigation(menu)).ToList(),
                     Permissions = ConvertToResourcePermissions(permissionsByResource)
                 }
+            };
+        }
+
+        // Conversión en línea de MenuItemDto a NavigationItemDto (recursiva)
+        private NavigationItemDto MapMenuToNavigation(MenuItemDto menu)
+        {
+            return new NavigationItemDto
+            {
+                Id = menu.Id,
+                Label = menu.Label,
+                Icon = menu.Icon ?? string.Empty,
+                Route = menu.Route,
+                Order = menu.Order,
+                Visible = true,
+                Children = menu.Children != null ? menu.Children.Select(MapMenuToNavigation).ToList() : new List<NavigationItemDto>()
             };
         }
 
@@ -113,28 +131,6 @@ namespace ERP.Application.Services
             }
             
             return roles.OrderBy(r => r.Name).ToList();
-        }
-
-        private async Task<List<UserRoleDto>> GetUserRolesAsync(User user, CancellationToken cancellationToken)
-        {
-            var roles = new List<UserRoleDto>();
-
-            // Obtener roles del usuario a través de la navegación
-            if (user.Roles != null && user.Roles.Any())
-            {
-                roles = user.Roles
-                    .Where(r => r.Status) // Solo roles activos
-                    .Select(r => new UserRoleDto
-                    {
-                        Id = r.Id,
-                        Name = r.Name,
-                        Description = r.Description,
-                        Status = r.Status
-                    })
-                    .ToList();
-            }
-            
-            return await Task.FromResult(roles);
         }
 
         /// <summary>
@@ -173,38 +169,6 @@ namespace ERP.Application.Services
             return permissionsMap.Values.OrderBy(p => p.Name).ToList();
         }
 
-        private UserConfigurationDto GetUserConfiguration(User user)
-        {
-            var config = new UserConfigurationDto();
-
-            // Si el usuario tiene configuraciones personalizadas en AdditionalData
-            if (!string.IsNullOrEmpty(user.ExtraData) && user.ExtraData != "{}")
-            {
-                try
-                {
-                    var extraData = JsonSerializer.Deserialize<Dictionary<string, object>>(user.ExtraData);
-                    if (extraData != null && extraData.ContainsKey("configuration"))
-                    {
-                        var configJson = extraData["configuration"].ToString();
-                        if (!string.IsNullOrEmpty(configJson))
-                        {
-                            var customConfig = JsonSerializer.Deserialize<UserConfigurationDto>(configJson);
-                            if (customConfig != null)
-                            {
-                                config = customConfig;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // Si hay error, usar configuración por defecto
-                }
-            }
-
-            return config;
-        }
-
         private List<MenuItemDto> GetAvailableMenus(List<string> userPermissions)
         {
             var menus = new List<MenuItemDto>();
@@ -220,7 +184,8 @@ namespace ERP.Application.Services
                 IsGroup = false
             });
 
-            // Módulo de Autenticación
+            #region Módulo de Auth
+
             var authMenus = new List<MenuItemDto>();
             
             if (userPermissions.Contains("users.read"))
@@ -230,9 +195,9 @@ namespace ERP.Application.Services
                     Id = "users",
                     Label = "Usuarios",
                     Icon = "people",
-                    Route = "/auth/users",
+                    Route = "/users",
                     Order = 1,
-                    RequiredPermissions = new List<string> { "users.read" }
+                    RequiredPermissions = ["users.read"]
                 });
             }
 
@@ -243,9 +208,9 @@ namespace ERP.Application.Services
                     Id = "roles",
                     Label = "Roles",
                     Icon = "security",
-                    Route = "/auth/roles",
+                    Route = "/roles",
                     Order = 2,
-                    RequiredPermissions = new List<string> { "roles.read" }
+                    RequiredPermissions = ["roles.read"]
                 });
             }
 
@@ -256,28 +221,42 @@ namespace ERP.Application.Services
                     Id = "permissions",
                     Label = "Permisos",
                     Icon = "key",
-                    Route = "/auth/permissions",
+                    Route = "/permissions",
                     Order = 3,
-                    RequiredPermissions = new List<string> { "permissions.read" }
+                    RequiredPermissions = ["permissions.read"]
                 });
             }
 
+            if (userPermissions.Contains("user_types.read"))
+            {
+                authMenus.Add(new MenuItemDto
+                {
+                    Id = "user_types",
+                    Label = "Tipos de usuarios",
+                    Icon = "people",
+                    Route = "/user-types",
+                    Order = 4,
+                    RequiredPermissions = ["permissions.read"]
+                });
+            }
+            
             if (authMenus.Any())
             {
                 menus.Add(new MenuItemDto
                 {
                     Id = "auth",
-                    Label = "Autenticación",
+                    Label = "Administración",
                     Icon = "shield",
                     Order = 2,
                     IsGroup = true,
                     Children = authMenus
                 });
             }
+            #endregion
 
-            // Módulo Financiero
+            #region Módulo Financiero
             var financeMenus = new List<MenuItemDto>();
-            
+
             if (userPermissions.Contains("financial_transactions.read"))
             {
                 financeMenus.Add(new MenuItemDto
@@ -288,6 +267,19 @@ namespace ERP.Application.Services
                     Route = "/finance/transactions",
                     Order = 1,
                     RequiredPermissions = new List<string> { "financial_transactions.read" }
+                });
+            }
+
+            if (userPermissions.Contains("financial_accounts.read"))
+            {
+                financeMenus.Add(new MenuItemDto
+                {
+                    Id = "account",
+                    Label = "Cuentas",
+                    Icon = "account_balance",
+                    Route = "/finance/accounts",
+                    Order = 2,
+                    RequiredPermissions = new List<string> { "financial_accounts.read" }
                 });
             }
 
@@ -303,8 +295,10 @@ namespace ERP.Application.Services
                     Children = financeMenus
                 });
             }
+            #endregion
 
-            // Módulo de Inventario
+
+            #region Módulo de Inventario
             var inventoryMenus = new List<MenuItemDto>();
             
             if (userPermissions.Contains("products.read"))
@@ -316,7 +310,7 @@ namespace ERP.Application.Services
                     Icon = "inventory",
                     Route = "/inventory/products",
                     Order = 1,
-                    RequiredPermissions = new List<string> { "products.read" }
+                    RequiredPermissions = ["products.read"]
                 });
             }
 
@@ -332,44 +326,114 @@ namespace ERP.Application.Services
                     Children = inventoryMenus
                 });
             }
+            #endregion
+
+            #region Módulo de Ventas
+            var salesMenus = new List<MenuItemDto>();
+            
+            if (userPermissions.Contains("sales_orders.read"))
+            {
+                salesMenus.Add(new MenuItemDto
+                {
+                    Id = "sales_orders",
+                    Label = "Órdenes de Venta",
+                    Icon = "receipt",
+                    Route = "/sales/orders",
+                    Order = 1,
+                    RequiredPermissions = ["sales_orders.read"]
+                });
+            }
+
+            if (userPermissions.Contains("sales_invoices.read"))
+            {
+                salesMenus.Add(new MenuItemDto
+                {
+                    Id = "sales_invoices",
+                    Label = "Factura",
+                    Icon = "library_books",
+                    Route = "/sales/Invoices",
+                    Order = 2,
+                    RequiredPermissions = ["sales_invoices.read"]
+                });
+            }
+
+            if (salesMenus.Any())
+            {
+                menus.Add(new MenuItemDto
+                {
+                    Id = "sales",
+                    Label = "Ventas",
+                    Icon = "point_of_sale",
+                    Order = 5,
+                    IsGroup = true,
+                    Children = salesMenus
+                });
+            }
+            #endregion
+
+            // Módulo de Compras
+            var purchasesMenus = new List<MenuItemDto>();
+            
+            if (userPermissions.Contains("purchases.read"))
+            {
+                purchasesMenus.Add(new MenuItemDto
+                {
+                    Id = "purchase_orders",
+                    Label = "Órdenes de Compra",
+                    Icon = "shopping_cart",
+                    Route = "/purchases/orders",
+                    Order = 1,
+                    RequiredPermissions = new List<string> { "purchases.read" }
+                });
+            }
+
+            if (userPermissions.Contains("suppliers.read"))
+            {
+                purchasesMenus.Add(new MenuItemDto
+                {
+                    Id = "suppliers",
+                    Label = "Proveedores",
+                    Icon = "local_shipping",
+                    Route = "/suppliers",
+                    Order = 2,
+                    RequiredPermissions = new List<string> { "suppliers.read" }
+                });
+            }
+
+            if (userPermissions.Contains("purchases.read"))
+            {
+                purchasesMenus.Add(new MenuItemDto
+                {
+                    Id = "purchase_reports",
+                    Label = "Reportes de Compras",
+                    Icon = "analytics",
+                    Route = "/purchases/reports",
+                    Order = 3,
+                    RequiredPermissions = new List<string> { "purchases.read" }
+                });
+            }
+
+            if (purchasesMenus.Any())
+            {
+                menus.Add(new MenuItemDto
+                {
+                    Id = "purchases",
+                    Label = "Compras",
+                    Icon = "shopping_bag",
+                    Order = 6,
+                    IsGroup = true,
+                    Children = purchasesMenus
+                });
+            }
 
             return menus.OrderBy(m => m.Order).ToList();
-        }
-
-        private Dictionary<string, object>? GetAdditionalData(User user)
-        {
-            if (string.IsNullOrEmpty(user.ExtraData) || user.ExtraData == "{}")
-            {
-                return null;
-            }
-
-            try
-            {
-                return JsonSerializer.Deserialize<Dictionary<string, object>>(user.ExtraData);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private async Task<DateTime?> GetLastLoginAsync(Guid userId, CancellationToken cancellationToken)
-        {
-            var sessions = await _sessionRepository.Finds(s => s.UserId == userId, cancellationToken);
-            if (sessions != null && sessions.Any())
-            {
-                // Asumir que las sesiones tienen un campo CreatedAt o similar
-                // return sessions.OrderByDescending(s => s.CreatedAt).FirstOrDefault()?.CreatedAt;
-            }
-            
-            return null;
         }
 
         /// <summary>
         /// Genera permisos agrupados por recurso en formato híbrido para el frontend
         /// Convierte de "users.read" a { "users": { "read": true, "create": false, ... } }
         /// </summary>
-        private Dictionary<string, Dictionary<string, bool>> GeneratePermissionsByResource(List<string> userPermissions)
+        private static Dictionary<string, Dictionary<string, bool>> GeneratePermissionsByResource(List<string> userPermissions)
         {
             var permissionsByResource = new Dictionary<string, Dictionary<string, bool>>();
 
@@ -405,23 +469,6 @@ namespace ERP.Application.Services
             return permissionsByResource;
         }
 
-
-
-        /// <summary>
-        /// Convierte MenuItemDto a NavigationItemDto para el formato de respuesta
-        /// </summary>
-        private List<NavigationItemDto> ConvertMenusToNavigation(List<MenuItemDto> menus)
-        {
-            return menus.Select(menu => new NavigationItemDto
-            {
-                Id = menu.Id,
-                Label = menu.Label,
-                Icon = menu.Icon,
-                Route = menu.Route,
-                Order = menu.Order,
-                Children = menu.Children?.Count > 0 ? ConvertMenusToNavigation(menu.Children) : null
-            }).ToList();
-        }
 
         /// <summary>
         /// Convierte el formato de permisos agrupados a ResourcePermissionsDto

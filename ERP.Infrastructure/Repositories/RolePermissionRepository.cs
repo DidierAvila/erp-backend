@@ -2,12 +2,13 @@ using ERP.Domain.Entities.Auth;
 using ERP.Domain.Repositories;
 using ERP.Infrastructure.DbContexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ERP.Infrastructure.Repositories
 {
     public class RolePermissionRepository : RepositoryBase<RolePermission>, IRolePermissionRepository
     {
-        public RolePermissionRepository(ErpDbContext context) : base(context)
+        public RolePermissionRepository(ErpDbContext context, ILogger<RepositoryBase<RolePermission>> logger) : base(context, logger)
         {
         }
 

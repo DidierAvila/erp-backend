@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERP.API.Controllers.Finance
 {
+    /// <summary>
+    /// Controlador para gestionar cuentas financieras.
+    /// </summary>
     [ApiController]
     [Route("api/finance/[controller]")]
     public class AccountsController : ControllerBase
@@ -13,6 +16,12 @@ namespace ERP.API.Controllers.Finance
         private readonly IAccountCommandHandler _accountCommandHandler;
         private readonly IAccountQueryHandler _accountQueryHandler;
 
+        /// <summary>
+        /// Constructor del controlador AccountsController
+        /// </summary>
+        /// <param name="accountCommandHandler"></param>
+        /// <param name="accountQueryHandler"></param>
+        /// <param name="logger"></param>
         public AccountsController(
             IAccountCommandHandler accountCommandHandler,
             IAccountQueryHandler accountQueryHandler,
