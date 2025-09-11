@@ -47,4 +47,13 @@ namespace ERP.Domain.DTOs.Auth
         public DateTime? UpdatedAt { get; set; }
         public ICollection<RoleDto> Roles { get; set; } = new List<RoleDto>();
     }
+
+    /// <summary>
+    /// DTO optimizado para dropdowns/listas desplegables de permisos (máximo rendimiento)
+    /// </summary>
+    public class PermissionDropdownDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = null!;
+    }
 }

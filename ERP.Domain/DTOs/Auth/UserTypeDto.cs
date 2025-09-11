@@ -29,4 +29,13 @@ namespace ERP.Domain.DTOs.Auth
         public bool Status { get; set; }
         public int UserCount { get; set; }
     }
+
+    /// <summary>
+    /// DTO optimizado para dropdowns/listas desplegables de tipos de usuario (máximo rendimiento)
+    /// </summary>
+    public class UserTypeDropdownDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = null!;
+    }
 }

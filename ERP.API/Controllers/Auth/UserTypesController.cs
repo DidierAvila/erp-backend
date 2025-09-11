@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ERP.API.Controllers.Auth
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth/[controller]")]
     public class UserTypesController : ControllerBase
     {
         private readonly IUserTypeCommandHandler _commandHandler;
@@ -156,6 +156,33 @@ namespace ERP.API.Controllers.Auth
         public async Task<ActionResult<IEnumerable<UserTypeSummaryDto>>> GetUserTypesSummary(CancellationToken cancellationToken)
         {
             var userTypes = await _queryHandler.GetUserTypesSummary(cancellationToken);
+            return Ok(userTypes);
+        }
+
+        /// <summary>
+        /// Obtiene lista optimizada de tipos de usuario para dropdowns/listas desplegables
+        /// </summary>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Lista de tipos de usuario activos con solo ID y nombre, ordenada alfabéticamente</returns>
+        /// <remarks>
+        /// Endpoint optimizado para componentes UI que requieren listas de tipos de usuario:
+        /// - Solo tipos de usuario activos (status = true)
+        /// - Solo campos ID y Name para máximo rendimiento  
+        /// - Ordenamiento alfabético automático por nombre
+        /// - Sin paginación (lista completa)
+        /// - Ideal para: Select, Dropdown, Multiselect, etc.
+        /// 
+        /// Ejemplo de respuesta:
+        /// [
+        ///   { "id": "uuid-1", "name": "Administrador" },
+        ///   { "id": "uuid-2", "name": "Cliente" },
+        ///   { "id": "uuid-3", "name": "Empleado" }
+        /// ]
+        /// </remarks>
+        [HttpGet("dropdown")]
+        public async Task<ActionResult<IEnumerable<UserTypeDropdownDto>>> GetUserTypesDropdown(CancellationToken cancellationToken)
+        {
+            var userTypes = await _queryHandler.GetUserTypesForDropdown(cancellationToken);
             return Ok(userTypes);
         }
     }

@@ -36,5 +36,10 @@ namespace ERP.Domain.Repositories
         /// Obtener relaciones UserRole con información de usuarios y roles
         /// </summary>
         Task<List<UserRole>> GetUserRolesWithDetailsAsync(Guid userId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Remover todos los roles de un usuario
+        /// </summary>
+        Task<bool> RemoveAllUserRolesAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }

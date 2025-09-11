@@ -76,6 +76,7 @@ namespace ERP.API.Extensions
             services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetAllUserTypes>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetActiveUserTypes>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetUserTypesSummary>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.UserTypes.GetUserTypesForDropdown>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.UserType.GetAllUserTypesFiltered>();
             services.AddScoped<IUserTypeQueryHandler, UserTypeQueryHandler>();
 
@@ -91,6 +92,7 @@ namespace ERP.API.Extensions
             services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetActivePermissions>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetPermissionsSummary>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.Permission.GetAllPermissionsFiltered>();
+            services.AddScoped<ERP.Application.Core.Auth.Queries.Permissions.GetPermissionsForDropdown>();
             services.AddScoped<IPermissionQueryHandler, PermissionQueryHandler>();
 
             // Permission Services
@@ -109,6 +111,7 @@ namespace ERP.API.Extensions
             // Role Queries  
             services.AddScoped<GetRoleById>();
             services.AddScoped<GetAllRoles>();
+            services.AddScoped<GetRolesDropdown>();
             services.AddScoped<ERP.Application.Core.Auth.Queries.Role.GetAllRolesFiltered>();
             services.AddScoped<IRoleQueryHandler, RoleQueryHandler>();
 

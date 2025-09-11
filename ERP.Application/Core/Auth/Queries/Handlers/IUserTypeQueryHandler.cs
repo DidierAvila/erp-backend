@@ -10,5 +10,6 @@ namespace ERP.Application.Core.Auth.Queries.Handlers
         Task<IEnumerable<UserTypeDto>> GetActiveUserTypes(CancellationToken cancellationToken);
         Task<IEnumerable<UserTypeSummaryDto>> GetUserTypesSummary(CancellationToken cancellationToken);
         Task<PaginationResponseDto<UserTypeListResponseDto>> GetAllUserTypesFiltered(UserTypeFilterDto filter, CancellationToken cancellationToken);
+        Task<IEnumerable<UserTypeDropdownDto>> GetUserTypesForDropdown(CancellationToken cancellationToken);
     }
 }

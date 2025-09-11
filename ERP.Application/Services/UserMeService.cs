@@ -38,10 +38,10 @@ namespace ERP.Application.Services
         }
 
         /// <summary>
-        /// Obtiene la información básica del usuario autenticado y sus permisos
-        /// Solo incluye campos que no estén vacíos para optimizar la respuesta
+        /// Obtiene la información del usuario autenticado en formato híbrido con navegación y permisos agrupados
+        /// Formato optimizado para frontends con navegación dinámica y permisos granulares
         /// </summary>
-        public async Task<UserMeDto> GetUserMeAsync(Guid userId, CancellationToken cancellationToken = default)
+        public async Task<UserMeResponseDto> GetUserMeAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             var user = await _userRepository.Find(u => u.Id == userId, cancellationToken);
             if (user == null)
@@ -52,54 +52,38 @@ namespace ERP.Application.Services
             // Obtener información del tipo de usuario
             var userType = await _userTypeRepository.Find(ut => ut.Id == user.UserTypeId, cancellationToken);
 
-            var userMe = new UserMeDto
+            // Obtener roles del usuario (solo activos)
+            var userRoles = await GetUserRolesOptimizedAsync(userId, cancellationToken);
+
+            // Obtener permisos únicos del usuario (de todos sus roles activos)
+            var userPermissions = await GetUserPermissionsOptimizedAsync(userId, cancellationToken);
+
+            // Generar permisos agrupados por recurso (formato híbrido)
+            var permissionNames = userPermissions.Select(p => p.Name).ToList();
+            var permissionsByResource = GeneratePermissionsByResource(permissionNames);
+
+            // Generar navegación dinámica basada en permisos
+            var navigation = GetAvailableMenus(permissionNames);
+
+            // Crear respuesta en formato híbrido
+            return new UserMeResponseDto
             {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                UserTypeId = user.UserTypeId,
-                CreatedAt = user.CreatedAt ?? DateTime.UtcNow,
+                Success = true,
+                Data = new UserMeDataDto
+                {
+                    User = new UserBasicInfoDto
+                    {
+                        Id = user.Id.ToString(),
+                        Name = user.Name,
+                        Email = user.Email,
+                        Role = userRoles.FirstOrDefault()?.Name ?? "Sin Rol",
+                        RoleId = userRoles.FirstOrDefault()?.Id.ToString() ?? "0",
+                        Avatar = user.Image ?? "/images/users/default.jpg"
+                    },
+                    Navigation = ConvertMenusToNavigation(navigation),
+                    Permissions = ConvertToResourcePermissions(permissionsByResource)
+                }
             };
-
-            // Solo incluir campos opcionales si no están vacíos
-            if (!string.IsNullOrWhiteSpace(user.Image))
-                userMe.Image = user.Image;
-
-            if (!string.IsNullOrWhiteSpace(user.Phone))
-                userMe.Phone = user.Phone;
-
-            if (!string.IsNullOrWhiteSpace(user.Addres))
-                userMe.Address = user.Addres;
-
-            if (!string.IsNullOrWhiteSpace(userType?.Name))
-                userMe.UserTypeName = userType.Name;
-
-            if (user.UpdatedAt.HasValue)
-                userMe.UpdatedAt = user.UpdatedAt;
-
-            // Obtener roles del usuario (solo activos) - Cargar explícitamente
-            userMe.Roles = await GetUserRolesOptimizedAsync(userId, cancellationToken);
-
-            // Obtener permisos únicos del usuario (de todos sus roles activos) - Optimizado
-            userMe.Permissions = await GetUserPermissionsOptimizedAsync(userId, cancellationToken);
-
-            // Procesar datos adicionales si existen
-            if (!string.IsNullOrEmpty(user.ExtraData) && user.ExtraData != "{}")
-            {
-                try
-                {
-                    userMe.AdditionalData = JsonSerializer.Deserialize<Dictionary<string, object>>(user.ExtraData);
-                }
-                catch
-                {
-                    userMe.AdditionalData = new Dictionary<string, object>();
-                }
-            }
-
-            // Obtener información de la última sesión
-            userMe.LastLoginAt = await GetLastLoginAsync(userId, cancellationToken);
-
-            return userMe;
         }
 
         /// <summary>
@@ -379,6 +363,88 @@ namespace ERP.Application.Services
             }
             
             return null;
+        }
+
+        /// <summary>
+        /// Genera permisos agrupados por recurso en formato híbrido para el frontend
+        /// Convierte de "users.read" a { "users": { "read": true, "create": false, ... } }
+        /// </summary>
+        private Dictionary<string, Dictionary<string, bool>> GeneratePermissionsByResource(List<string> userPermissions)
+        {
+            var permissionsByResource = new Dictionary<string, Dictionary<string, bool>>();
+
+            // Definir recursos principales del ERP
+            var resources = new[] 
+            {
+                "users", "roles", "permissions", "products", "sales", "customers", 
+                "purchases", "suppliers", "finance", "accounts", "inventory", 
+                "categories", "stock_movements", "financial_transactions", "reports"
+            };
+
+            // Definir acciones estándar
+            var actions = new[] { "read", "create", "edit", "delete", "export", "import" };
+
+            foreach (var resource in resources)
+            {
+                var resourcePermissions = new Dictionary<string, bool>();
+                
+                foreach (var action in actions)
+                {
+                    // Verificar si el usuario tiene el permiso específico
+                    var permissionName = $"{resource}.{action}";
+                    resourcePermissions[action] = userPermissions.Contains(permissionName);
+                }
+
+                // Solo incluir el recurso si tiene al menos un permiso
+                if (resourcePermissions.Any(rp => rp.Value))
+                {
+                    permissionsByResource[resource] = resourcePermissions;
+                }
+            }
+
+            return permissionsByResource;
+        }
+
+
+
+        /// <summary>
+        /// Convierte MenuItemDto a NavigationItemDto para el formato de respuesta
+        /// </summary>
+        private List<NavigationItemDto> ConvertMenusToNavigation(List<MenuItemDto> menus)
+        {
+            return menus.Select(menu => new NavigationItemDto
+            {
+                Id = menu.Id,
+                Label = menu.Label,
+                Icon = menu.Icon,
+                Route = menu.Route,
+                Order = menu.Order,
+                Children = menu.Children?.Count > 0 ? ConvertMenusToNavigation(menu.Children) : null
+            }).ToList();
+        }
+
+        /// <summary>
+        /// Convierte el formato de permisos agrupados a ResourcePermissionsDto
+        /// </summary>
+        private Dictionary<string, ResourcePermissionsDto> ConvertToResourcePermissions(Dictionary<string, Dictionary<string, bool>> permissionsByResource)
+        {
+            var result = new Dictionary<string, ResourcePermissionsDto>();
+            
+            foreach (var resource in permissionsByResource)
+            {
+                var resourcePermissions = resource.Value;
+                result[resource.Key] = new ResourcePermissionsDto
+                {
+                    Read = resourcePermissions.GetValueOrDefault("read", false),
+                    Create = resourcePermissions.GetValueOrDefault("create", false),
+                    Edit = resourcePermissions.GetValueOrDefault("edit", false),
+                    Delete = resourcePermissions.GetValueOrDefault("delete", false),
+                    Export = resourcePermissions.GetValueOrDefault("export", false),
+                    Import = resourcePermissions.GetValueOrDefault("import", false)
+                };
+            }
+            
+            return result;
         }
     }
 }

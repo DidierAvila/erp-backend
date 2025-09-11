@@ -12,19 +12,22 @@ namespace ERP.Application.Core.Auth.Queries.Handlers
         private readonly GetActiveUserTypes _getActiveUserTypes;
         private readonly GetUserTypesSummary _getUserTypesSummary;
         private readonly GetAllUserTypesFiltered _getAllUserTypesFiltered;
+        private readonly GetUserTypesForDropdown _getUserTypesForDropdown;
 
         public UserTypeQueryHandler(
             GetUserTypeById getUserTypeById,
             GetAllUserTypes getAllUserTypes,
             GetActiveUserTypes getActiveUserTypes,
             GetUserTypesSummary getUserTypesSummary,
-            GetAllUserTypesFiltered getAllUserTypesFiltered)
+            GetAllUserTypesFiltered getAllUserTypesFiltered,
+            GetUserTypesForDropdown getUserTypesForDropdown)
         {
             _getUserTypeById = getUserTypeById;
             _getAllUserTypes = getAllUserTypes;
             _getActiveUserTypes = getActiveUserTypes;
             _getUserTypesSummary = getUserTypesSummary;
             _getAllUserTypesFiltered = getAllUserTypesFiltered;
+            _getUserTypesForDropdown = getUserTypesForDropdown;
         }
 
         public async Task<UserTypeDto?> GetUserTypeById(Guid id, CancellationToken cancellationToken)
@@ -50,6 +53,11 @@ namespace ERP.Application.Core.Auth.Queries.Handlers
         public async Task<PaginationResponseDto<UserTypeListResponseDto>> GetAllUserTypesFiltered(UserTypeFilterDto filter, CancellationToken cancellationToken)
         {
             return await _getAllUserTypesFiltered.GetUserTypesFiltered(filter, cancellationToken);
+        }
+
+        public async Task<IEnumerable<UserTypeDropdownDto>> GetUserTypesForDropdown(CancellationToken cancellationToken)
+        {
+            return await _getUserTypesForDropdown.HandleAsync(cancellationToken);
         }
     }
 }

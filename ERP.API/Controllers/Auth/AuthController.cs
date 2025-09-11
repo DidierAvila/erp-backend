@@ -52,12 +52,13 @@ namespace ERP.API.Controllers.Auth
         }
 
         /// <summary>
-        /// Obtiene la información del usuario autenticado y sus permisos
+        /// Obtiene la información del usuario autenticado en formato híbrido con navegación y permisos agrupados
+        /// Formato optimizado para frontends con navegación dinámica y permisos granulares
         /// </summary>
         [HttpGet]
         [Route("me")]
         [Authorize]
-        public async Task<ActionResult<UserMeDto>> GetMe(CancellationToken cancellationToken)
+        public async Task<ActionResult<UserMeResponseDto>> GetMe(CancellationToken cancellationToken)
         {
             try
             {
@@ -75,26 +76,28 @@ namespace ERP.API.Controllers.Auth
 
                 _logger.LogInformation($"Parsed user ID: {userId}");
 
-                // Obtener la información del usuario y sus permisos
-                var userMe = await _userMeService.GetUserMeAsync(userId, cancellationToken);
-                if (userMe == null)
-                {
-                    _logger.LogWarning($"User with ID {userId} not found");
-                    return NotFound(new { message = "User not found" });
-                }
-
-                _logger.LogInformation($"Successfully retrieved user info for: {userMe.Email}");
-                return Ok(userMe);
+                // Obtener la información del usuario en formato híbrido
+                var userMeHybrid = await _userMeService.GetUserMeAsync(userId, cancellationToken);
+                
+                _logger.LogInformation($"Successfully retrieved hybrid user info for user ID: {userId}");
+                return Ok(userMeHybrid);
             }
             catch (KeyNotFoundException ex)
             {
                 _logger.LogError(ex, "User not found in database");
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { 
+                    success = false, 
+                    message = ex.Message 
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting user information");
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { 
+                    success = false, 
+                    message = "Internal server error", 
+                    error = ex.Message 
+                });
             }
         }
 

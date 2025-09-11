@@ -8,11 +8,15 @@ namespace ERP.Application.Core.Auth.Commands.Roles
     public class CreateRole
     {
         private readonly IRepositoryBase<Role> _roleRepository;
+        private readonly IRepositoryBase<Permission> _permissionRepository;
+        private readonly IRolePermissionRepository _rolePermissionRepository;
         private readonly IMapper _mapper;
 
-        public CreateRole(IRepositoryBase<Role> roleRepository, IMapper mapper)
+        public CreateRole(IRepositoryBase<Role> roleRepository, IRepositoryBase<Permission> permissionRepository, IRolePermissionRepository rolePermissionRepository, IMapper mapper)
         {
             _roleRepository = roleRepository;
+            _permissionRepository = permissionRepository;
+            _rolePermissionRepository = rolePermissionRepository;
             _mapper = mapper;
         }
 
@@ -33,8 +37,66 @@ namespace ERP.Application.Core.Auth.Commands.Roles
             // Create role in repository
             var createdRole = await _roleRepository.Create(role, cancellationToken);
 
+            // Asignar permisos si se proporcionaron
+            if (createRoleDto.PermissionIds != null && createRoleDto.PermissionIds.Any())
+            {
+                await AssignPermissionsToRole(createdRole.Id, createRoleDto.PermissionIds, cancellationToken);
+            }
+
             // Map Entity to DTO using AutoMapper
-            return _mapper.Map<RoleDto>(createdRole);
+            var roleDto = _mapper.Map<RoleDto>(createdRole);
+
+            // Cargar permisos asignados para incluir en la respuesta
+            if (createRoleDto.PermissionIds != null && createRoleDto.PermissionIds.Any())
+            {
+                roleDto.Permissions = await LoadRolePermissions(createdRole.Id, cancellationToken);
+            }
+
+            return roleDto;
+        }
+
+        /// <summary>
+        /// Asigna múltiples permisos a un rol recién creado
+        /// </summary>
+        private async Task AssignPermissionsToRole(Guid roleId, List<Guid> permissionIds, CancellationToken cancellationToken)
+        {
+            // Validar que todos los permisos existen
+            var validPermissions = new List<Permission>();
+            foreach (var permissionId in permissionIds)
+            {
+                var permission = await _permissionRepository.Find(p => p.Id == permissionId, cancellationToken);
+                if (permission != null)
+                {
+                    validPermissions.Add(permission);
+
+                    // Crear la relación RolePermission
+                    var rolePermission = new RolePermission
+                    {
+                        RoleId = roleId,
+                        PermissionId = permissionId
+                    };
+
+                    await _rolePermissionRepository.Create(rolePermission, cancellationToken);
+                }
+            }
+        }
+
+        private async Task<List<PermissionDto>> LoadRolePermissions(Guid roleId, CancellationToken cancellationToken)
+        {
+            var rolePermissionRelations = await _rolePermissionRepository.GetPermissionsByRoleIdAsync(roleId, cancellationToken);
+            var permissionIds = rolePermissionRelations.Select(rp => rp.PermissionId).ToList();
+
+            var permissions = new List<Permission>();
+            foreach (var permissionId in permissionIds)
+            {
+                var permission = await _permissionRepository.Find(p => p.Id == permissionId, cancellationToken);
+                if (permission != null)
+                {
+                    permissions.Add(permission);
+                }
+            }
+
+            return _mapper.Map<List<PermissionDto>>(permissions);
         }
     }
 }

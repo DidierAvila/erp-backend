@@ -12,19 +12,22 @@ namespace ERP.Application.Core.Auth.Queries.Handlers
         private readonly GetActivePermissions _getActivePermissions;
         private readonly GetPermissionsSummary _getPermissionsSummary;
         private readonly GetAllPermissionsFiltered _getAllPermissionsFiltered;
+        private readonly GetPermissionsForDropdown _getPermissionsForDropdown;
 
         public PermissionQueryHandler(
             GetPermissionById getPermissionById,
             GetAllPermissions getAllPermissions,
             GetActivePermissions getActivePermissions,
             GetPermissionsSummary getPermissionsSummary,
-            GetAllPermissionsFiltered getAllPermissionsFiltered)
+            GetAllPermissionsFiltered getAllPermissionsFiltered,
+            GetPermissionsForDropdown getPermissionsForDropdown)
         {
             _getPermissionById = getPermissionById;
             _getAllPermissions = getAllPermissions;
             _getActivePermissions = getActivePermissions;
             _getPermissionsSummary = getPermissionsSummary;
             _getAllPermissionsFiltered = getAllPermissionsFiltered;
+            _getPermissionsForDropdown = getPermissionsForDropdown;
         }
 
         public async Task<PermissionDto?> GetPermissionById(Guid id, CancellationToken cancellationToken)
@@ -50,6 +53,11 @@ namespace ERP.Application.Core.Auth.Queries.Handlers
         public async Task<PaginationResponseDto<PermissionListResponseDto>> GetAllPermissionsFiltered(PermissionFilterDto filter, CancellationToken cancellationToken)
         {
             return await _getAllPermissionsFiltered.GetPermissionsFiltered(filter, cancellationToken);
+        }
+
+        public async Task<IEnumerable<PermissionDropdownDto>> GetPermissionsForDropdown(CancellationToken cancellationToken)
+        {
+            return await _getPermissionsForDropdown.HandleAsync(cancellationToken);
         }
     }
 }

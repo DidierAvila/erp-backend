@@ -52,4 +52,13 @@ namespace ERP.Domain.DTOs.Auth
         public ICollection<PermissionDto> Permissions { get; set; } = new List<PermissionDto>();
         public ICollection<UserDto> Users { get; set; } = new List<UserDto>();
     }
+
+    /// <summary>
+    /// DTO optimizado para dropdowns/listas desplegables de roles (máximo rendimiento)
+    /// </summary>
+    public class RoleDropdownDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = null!;
+    }
 }

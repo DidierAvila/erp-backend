@@ -26,6 +26,9 @@ namespace ERP.Domain.DTOs.Auth
         // Permisos del Usuario (agregados de todos los roles) - Optimizado
         public List<PermissionBasicDto> Permissions { get; set; } = new();
         
+        // Permisos agrupados por recurso para frontend (formato híbrido)
+        public Dictionary<string, Dictionary<string, bool>> PermissionsByResource { get; set; } = new();
+        
         // Configuraciones del Usuario
         public UserConfigurationDto Configuration { get; set; } = new();
         

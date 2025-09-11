@@ -10,5 +10,6 @@ namespace ERP.Application.Core.Auth.Queries.Handlers
         Task<IEnumerable<PermissionDto>> GetActivePermissions(CancellationToken cancellationToken);
         Task<IEnumerable<PermissionSummaryDto>> GetPermissionsSummary(CancellationToken cancellationToken);
         Task<PaginationResponseDto<PermissionListResponseDto>> GetAllPermissionsFiltered(PermissionFilterDto filter, CancellationToken cancellationToken);
+        Task<IEnumerable<PermissionDropdownDto>> GetPermissionsForDropdown(CancellationToken cancellationToken);
     }
 }

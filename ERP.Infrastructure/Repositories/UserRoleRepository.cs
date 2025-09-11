@@ -111,5 +111,29 @@ namespace ERP.Infrastructure.Repositories
                 .Where(ur => ur.UserId == userId)
                 .ToListAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Remover todos los roles de un usuario
+        /// </summary>
+        public async Task<bool> RemoveAllUserRolesAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var userRoles = await _context.UserRoles
+                    .Where(ur => ur.UserId == userId)
+                    .ToListAsync(cancellationToken);
+
+                if (!userRoles.Any())
+                    return true; // No hay roles que eliminar
+
+                _context.UserRoles.RemoveRange(userRoles);
+                await _context.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

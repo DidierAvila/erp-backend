@@ -24,6 +24,8 @@ namespace ERP.Application.Mappings
                 .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions))
                 .ForMember(dest => dest.Users, opt => opt.MapFrom(src => src.Users));
 
+            CreateMap<Role, RoleDropdownDto>();
+
             // DTO to Entity mappings
             CreateMap<CreateRoleDto, Role>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => Guid.NewGuid()))

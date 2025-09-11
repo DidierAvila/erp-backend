@@ -15,6 +15,11 @@ namespace ERP.Domain.DTOs.Auth
         public Dictionary<string, object>? AdditionalData { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        
+        /// <summary>
+        /// Roles asignados al usuario
+        /// </summary>
+        public List<UserRoleDto>? Roles { get; set; }
     }
 
     public class CreateUserDto
@@ -39,6 +44,11 @@ namespace ERP.Domain.DTOs.Auth
 
         public string? Addres { get; set; }
         public Dictionary<string, object>? AdditionalData { get; set; }
+        
+        /// <summary>
+        /// Lista de IDs de roles para asignar al usuario durante la creación
+        /// </summary>
+        public List<Guid>? RoleIds { get; set; }
     }
 
     public class UpdateUserDto
@@ -50,6 +60,12 @@ namespace ERP.Domain.DTOs.Auth
         public Guid? UserTypeId { get; set; }
         public string? Addres { get; set; }
         public Dictionary<string, object>? AdditionalData { get; set; }
+        
+        /// <summary>
+        /// Lista de IDs de roles a asignar al usuario. 
+        /// Si se proporciona, reemplaza todos los roles actuales del usuario.
+        /// </summary>
+        public List<Guid>? RoleIds { get; set; }
     }
 
     public class UserLoginDto

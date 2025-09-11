@@ -10,6 +10,8 @@ namespace ERP.Application.Mappings
         {
             // Entity to DTO mappings
             CreateMap<UserTypes, UserTypeDto>();
+            
+            CreateMap<UserTypes, UserTypeDropdownDto>();
 
             CreateMap<UserTypes, UserTypeSummaryDto>()
                 .ForMember(dest => dest.UserCount, opt => opt.MapFrom(src => src.Users.Count));

@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using ERP.API.Extensions;
 using ERP.Infrastructure.DbContexts;
@@ -37,10 +38,21 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add Swagger configuration
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Api ERP", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo 
+    { 
+        Title = "ERP API", 
+        Version = "v1" 
+    });
+    
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+    
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,

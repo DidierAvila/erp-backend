@@ -56,24 +56,32 @@ namespace ERP.API.Controllers.Auth
         }
 
         /// <summary>
-        /// Obtener todos los usuarios sin paginación (para uso interno/admin)
-        /// Optimizado sin AdditionalData para mejor rendimiento
+        /// Obtiene un usuario por su ID incluyendo sus roles asignados
         /// </summary>
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<UserBasicDto>>> GetAllUnpaginated(CancellationToken cancellationToken)
-        {
-            try
-            {
-                var users = await _userQueryHandler.GetAllUsersBasic(cancellationToken);
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all users");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
+        /// <param name="id">ID del usuario</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Usuario con roles asignados</returns>
+        /// <remarks>
+        /// Respuesta incluye:
+        /// - Información básica del usuario
+        /// - Tipo de usuario (UserType)
+        /// - Lista completa de roles asignados con detalles
+        /// 
+        /// Ejemplo de respuesta:
+        /// {
+        ///   "id": "uuid-usuario",
+        ///   "name": "Juan Pérez",
+        ///   "email": "juan@empresa.com",
+        ///   "userTypeName": "Empleado",
+        ///   "roles": [
+        ///     {
+        ///       "id": "uuid-rol",
+        ///       "name": "Administrador",
+        ///       "description": "Acceso completo"
+        ///     }
+        ///   ]
+        /// }
+        /// </remarks>
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetById(Guid id, CancellationToken cancellationToken)
         {
@@ -92,6 +100,25 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
+        /// <summary>
+        /// Crea un nuevo usuario con roles opcionales
+        /// </summary>
+        /// <param name="createDto">Datos del usuario a crear, incluyendo roles opcionales</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Usuario creado con roles asignados</returns>
+        /// <remarks>
+        /// Ejemplo de request body:
+        /// {
+        ///   "name": "Juan Pérez",
+        ///   "email": "juan.perez@empresa.com",
+        ///   "password": "Password123!",
+        ///   "userTypeId": "uuid-del-tipo-usuario",
+        ///   "roleIds": ["uuid-rol-1", "uuid-rol-2"]
+        /// }
+        /// 
+        /// Si no se especifican roles (roleIds), el usuario se creará sin roles asignados.
+        /// Los roles se pueden asignar posteriormente usando los endpoints de gestión de roles.
+        /// </remarks>
         [HttpPost]
         public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto createDto, CancellationToken cancellationToken)
         {
@@ -115,6 +142,35 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
+        /// <summary>
+        /// Actualiza un usuario existente
+        /// </summary>
+        /// <param name="id">ID del usuario a actualizar</param>
+        /// <param name="updateDto">Datos a actualizar del usuario</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Usuario actualizado con roles asignados</returns>
+        /// <remarks>
+        /// La respuesta incluye los roles actuales del usuario después de la actualización.
+        /// Para gestionar roles específicamente, usar los endpoints de gestión de roles:
+        /// - POST /api/auth/users/{id}/roles - Asignar roles
+        /// - DELETE /api/auth/users/{id}/roles - Remover roles
+        /// 
+        /// Ejemplo de request:
+        /// {
+        ///   "name": "Juan Pérez Actualizado",
+        ///   "phone": "555-9999",
+        ///   "additionalData": {
+        ///     "position": "Senior Developer"
+        ///   }
+        /// }
+        /// 
+        /// Respuesta incluye roles actuales:
+        /// {
+        ///   "id": "uuid-usuario",
+        ///   "name": "Juan Pérez Actualizado",
+        ///   "roles": [...roles actuales...]
+        /// }
+        /// </remarks>
         [HttpPut("{id}")]
         public async Task<ActionResult<UserDto>> Update(Guid id, [FromBody] UpdateUserDto updateDto, CancellationToken cancellationToken)
         {

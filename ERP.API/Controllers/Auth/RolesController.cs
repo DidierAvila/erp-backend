@@ -85,6 +85,40 @@ namespace ERP.API.Controllers.Auth
         }
 
         /// <summary>
+        /// Obtiene lista optimizada de roles para dropdowns/listas desplegables
+        /// </summary>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Lista de roles activos con solo ID y nombre, ordenada alfabéticamente</returns>
+        /// <remarks>
+        /// Endpoint optimizado para componentes UI que requieren listas de roles:
+        /// - Solo roles activos (status = true)
+        /// - Solo campos ID y Name para máximo rendimiento  
+        /// - Ordenamiento alfabético automático por nombre
+        /// - Sin paginación (lista completa)
+        /// - Ideal para: Select, Dropdown, Multiselect, etc.
+        /// 
+        /// Ejemplo de respuesta:
+        /// [
+        ///   { "id": "uuid-1", "name": "Administrador" },
+        ///   { "id": "uuid-2", "name": "Empleado" },
+        ///   { "id": "uuid-3", "name": "Manager de Ventas" }
+        /// ]
+        /// </remarks>
+        [HttpGet("dropdown")]
+        public async Task<ActionResult<IEnumerable<RoleDropdownDto>>> GetRolesDropdown(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var roles = await _roleQueryHandler.GetRolesDropdown(cancellationToken);
+                return Ok(roles);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Obtiene un rol por ID incluyendo sus permisos asociados
         /// </summary>
         /// <param name="id">ID del rol</param>
@@ -107,7 +141,24 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
-        // POST: api/Roles
+        /// <summary>
+        /// Crea un nuevo rol con permisos opcionales
+        /// </summary>
+        /// <param name="createRoleDto">Datos del rol a crear, incluyendo permisos opcionales</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Rol creado con permisos asignados</returns>
+        /// <remarks>
+        /// Ejemplo de request body:
+        /// {
+        ///   "name": "Manager de Ventas",
+        ///   "description": "Gestiona el equipo de ventas",
+        ///   "status": true,
+        ///   "permissionIds": ["uuid-perm-1", "uuid-perm-2"]
+        /// }
+        /// 
+        /// Si no se especifican permisos (permissionIds), el rol se creará sin permisos asignados.
+        /// Los permisos se pueden asignar posteriormente usando los endpoints de gestión de permisos.
+        /// </remarks>
         [HttpPost]
         public async Task<ActionResult<RoleDto>> CreateRole([FromBody] CreateRoleDto createRoleDto, CancellationToken cancellationToken)
         {
@@ -130,7 +181,34 @@ namespace ERP.API.Controllers.Auth
             }
         }
 
-        // PUT: api/Roles/{id}
+        /// <summary>
+        /// Actualiza un rol existente incluyendo sus permisos
+        /// </summary>
+        /// <param name="id">ID del rol a actualizar</param>
+        /// <param name="updateRoleDto">Datos a actualizar del rol</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Rol actualizado con permisos asignados</returns>
+        /// <remarks>
+        /// La respuesta incluye los permisos actuales del rol después de la actualización.
+        /// Si se envían permissionIds, se reemplazarán todos los permisos existentes.
+        /// Para gestionar permisos específicamente, usar los endpoints de gestión de permisos:
+        /// - POST /api/auth/roles/{id}/permissions - Asignar permisos
+        /// - DELETE /api/auth/roles/{id}/permissions - Remover permisos
+        /// 
+        /// Ejemplo de request:
+        /// {
+        ///   "name": "Manager de Ventas Senior",
+        ///   "description": "Gestiona el equipo de ventas con más privilegios",
+        ///   "permissionIds": ["uuid-perm-1", "uuid-perm-2", "uuid-perm-3"]
+        /// }
+        /// 
+        /// Respuesta incluye permisos actualizados:
+        /// {
+        ///   "id": "uuid-rol",
+        ///   "name": "Manager de Ventas Senior",
+        ///   "permissions": [...permisos actualizados...]
+        /// }
+        /// </remarks>
         [HttpPut("{id}")]
         public async Task<ActionResult<RoleDto>> UpdateRole(Guid id, [FromBody] UpdateRoleDto updateRoleDto, CancellationToken cancellationToken)
         {

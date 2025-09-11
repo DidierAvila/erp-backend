@@ -1,4 +1,5 @@
 using ERP.Domain.DTOs.Common;
+using ERP.Domain.Entities.Auth;
 using System.ComponentModel;
 
 namespace ERP.Domain.DTOs.Auth
@@ -49,7 +50,8 @@ namespace ERP.Domain.DTOs.Auth
         public string? Phone { get; set; }
         public string? Address { get; set; }
         public string? Image { get; set; }
-        public string? RoleName { get; set; }
+        public string? FirstRoleName { get; set; }
+        public Guid UserTypeId { get; set; }
         public string? UserTypeName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

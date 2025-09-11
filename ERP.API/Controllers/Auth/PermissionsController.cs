@@ -154,6 +154,40 @@ namespace ERP.API.Controllers.Auth
         }
 
         /// <summary>
+        /// Obtiene lista optimizada de permisos para componentes dropdown del frontend
+        /// </summary>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Lista simplificada de permisos activos con solo Id y Name, ordenada alfabéticamente</returns>
+        /// <response code="200">Lista de permisos para dropdown obtenida exitosamente</response>
+        /// <response code="500">Error interno del servidor</response>
+        /// <remarks>
+        /// Este endpoint está optimizado para cargar listas desplegables en el frontend.
+        /// Solo retorna permisos activos con los campos esenciales (Id, Name) ordenados alfabéticamente.
+        /// 
+        /// Ejemplo de respuesta:
+        /// [
+        ///   { "id": "123e4567-e89b-12d3-a456-426614174000", "name": "Create Users" },
+        ///   { "id": "123e4567-e89b-12d3-a456-426614174001", "name": "Delete Users" },
+        ///   { "id": "123e4567-e89b-12d3-a456-426614174002", "name": "Read Users" }
+        /// ]
+        /// </remarks>
+        [HttpGet("dropdown")]
+        [ProducesResponseType(typeof(IEnumerable<PermissionDropdownDto>), 200)]
+        [ProducesResponseType(500)]
+        public async Task<ActionResult<IEnumerable<PermissionDropdownDto>>> GetPermissionsForDropdown(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var permissions = await _queryHandler.GetPermissionsForDropdown(cancellationToken);
+                return Ok(permissions);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving permissions for dropdown");
+            }
+        }
+
+        /// <summary>
         /// Get Permissions summary with role count
         /// </summary>
         [HttpGet("summary")]

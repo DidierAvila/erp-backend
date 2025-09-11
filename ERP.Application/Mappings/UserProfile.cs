@@ -78,6 +78,7 @@ namespace ERP.Application.Mappings
                 .ForMember(dest => dest.Sessions, opt => opt.Ignore())
                 .ForMember(dest => dest.Roles, opt => opt.Ignore())
                 .ForMember(dest => dest.UserType, opt => opt.Ignore())
+                .ForSourceMember(src => src.RoleIds, opt => opt.DoNotValidate()) // Ignorar RoleIds ya que se maneja por separado
                 .AfterMap((src, dest) => {
                     if (src.AdditionalData != null)
                     {

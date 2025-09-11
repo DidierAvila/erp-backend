@@ -10,15 +10,18 @@ namespace ERP.Application.Core.Auth.Queries.Handlers
         private readonly GetRoleById _getRoleById;
         private readonly GetAllRoles _getAllRoles;
         private readonly GetAllRolesFiltered _getAllRolesFiltered;
+        private readonly GetRolesDropdown _getRolesDropdown;
 
         public RoleQueryHandler(
             GetRoleById getRoleById, 
             GetAllRoles getAllRoles,
-            GetAllRolesFiltered getAllRolesFiltered)
+            GetAllRolesFiltered getAllRolesFiltered,
+            GetRolesDropdown getRolesDropdown)
         {
             _getRoleById = getRoleById;
             _getAllRoles = getAllRoles;
             _getAllRolesFiltered = getAllRolesFiltered;
+            _getRolesDropdown = getRolesDropdown;
         }
 
         public async Task<RoleDto?> GetRoleById(Guid id, CancellationToken cancellationToken)
@@ -34,6 +37,11 @@ namespace ERP.Application.Core.Auth.Queries.Handlers
         public async Task<PaginationResponseDto<RoleListResponseDto>> GetAllRolesFiltered(RoleFilterDto filter, CancellationToken cancellationToken)
         {
             return await _getAllRolesFiltered.GetRolesFiltered(filter, cancellationToken);
+        }
+
+        public async Task<IEnumerable<RoleDropdownDto>> GetRolesDropdown(CancellationToken cancellationToken)
+        {
+            return await _getRolesDropdown.HandleAsync(cancellationToken);
         }
     }
 }

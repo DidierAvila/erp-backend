@@ -9,11 +9,17 @@ namespace ERP.Application.Core.Auth.Queries.Users
     public class GetAllUsersFiltered
     {
         private readonly IRepositoryBase<User> _userRepository;
+        private readonly IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> _userTypeRepository;
+        private readonly IRepositoryBase<ERP.Domain.Entities.Auth.Role> _roleRepository;
+        private readonly IRepositoryBase<UserRole> _userRoleRepository;
         private readonly IMapper _mapper;
 
-        public GetAllUsersFiltered(IRepositoryBase<User> userRepository, IMapper mapper)
+        public GetAllUsersFiltered(IRepositoryBase<User> userRepository, IRepositoryBase<ERP.Domain.Entities.Auth.UserTypes> userTypeRepository, IRepositoryBase<ERP.Domain.Entities.Auth.Role> roleRepository, IRepositoryBase<UserRole> userRoleRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _userTypeRepository = userTypeRepository;
+            _roleRepository = roleRepository;
+            _userRoleRepository = userRoleRepository;
             _mapper = mapper;
         }
 
@@ -24,8 +30,12 @@ namespace ERP.Application.Core.Auth.Queries.Users
             if (filter.PageSize <= 0) filter.PageSize = 10;
             if (filter.PageSize > 100) filter.PageSize = 100;
 
-            // Obtener todos los usuarios
+            // Obtener datos por separado para evitar problemas de navegación
             var allUsers = await _userRepository.GetAll(cancellationToken);
+            var userTypes = await _userTypeRepository.GetAll(cancellationToken);
+            var roles = await _roleRepository.GetAll(cancellationToken);
+            var userRoles = await _userRoleRepository.GetAll(cancellationToken);
+
             var query = allUsers.AsQueryable();
 
             // Aplicar filtros
@@ -43,19 +53,28 @@ namespace ERP.Application.Core.Auth.Queries.Users
                 .Take(filter.PageSize)
                 .ToList();
 
-            // Mapear a DTOs - ajustado para la estructura real de User
-            var userDtos = users.Select(u => new UserListResponseDto
-            {
-                Id = u.Id,
-                Name = u.Name,
-                Email = u.Email,
-                Phone = u.Phone,
-                Address = u.Addres, // Note: hay un typo en la entidad (Addres en lugar de Address)
-                Image = u.Image,
-                RoleName = u.Roles?.FirstOrDefault()?.Name, // Tomando el primer rol
-                UserTypeName = u.UserType?.Name,
-                CreatedAt = u.CreatedAt ?? DateTime.MinValue, // Manejo de nullable
-                UpdatedAt = u.UpdatedAt
+            // Mapear a DTOs con datos cargados por separado
+            var userDtos = users.Select(u => {
+                var userType = userTypes.FirstOrDefault(ut => ut.Id == u.UserTypeId);
+                
+                // Buscar el primer rol del usuario
+                var firstUserRole = userRoles.FirstOrDefault(ur => ur.UserId == u.Id);
+                var firstRole = firstUserRole != null ? roles.FirstOrDefault(r => r.Id == firstUserRole.RoleId) : null;
+                
+                return new UserListResponseDto
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email,
+                    Phone = u.Phone,
+                    Address = u.Addres, // Note: hay un typo en la entidad (Addres en lugar de Address)
+                    Image = u.Image,
+                    UserTypeId = u.UserTypeId,
+                    UserTypeName = userType?.Name,
+                    FirstRoleName = firstRole?.Name,
+                    CreatedAt = u.CreatedAt ?? DateTime.MinValue, // Manejo de nullable
+                    UpdatedAt = u.UpdatedAt
+                };
             }).ToList();
 
             return userDtos.ToPaginatedResult(
