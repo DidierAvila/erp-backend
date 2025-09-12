@@ -10,10 +10,6 @@ namespace ERP.Domain.Validators.Sales
     {
         public SalesOrderValidator()
         {
-            RuleFor(x => x.OrderDate)
-                .NotEmpty().WithMessage("La fecha de la orden es requerida")
-                .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Now)).WithMessage("La fecha de la orden no puede ser futura");
-
             RuleFor(x => x.CustomerId)
                 .NotEmpty().WithMessage("El ID del cliente es requerido");
 

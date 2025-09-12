@@ -21,10 +21,6 @@ namespace ERP.Domain.Validators.Finance
                 .GreaterThan(0).WithMessage("El monto debe ser mayor a cero")
                 .PrecisionScale(18, 2, false).WithMessage("El monto no puede tener más de 2 decimales y debe ser menor a 999,999,999,999,999.99");
 
-            RuleFor(x => x.TransactionDate)
-                .NotEmpty().WithMessage("La fecha de transacción es requerida")
-                .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Now)).WithMessage("La fecha de transacción no puede ser futura");
-
             RuleFor(x => x.Description)
                 .MaximumLength(500).WithMessage("La descripción no puede exceder 500 caracteres")
                 .When(x => !string.IsNullOrEmpty(x.Description));

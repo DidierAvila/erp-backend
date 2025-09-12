@@ -1,6 +1,8 @@
 using ERP.Domain.Entities.Auth;
 using ERP.Domain.Entities.Finance;
 using ERP.Domain.Entities.Inventory;
+using ERP.Domain.Entities.Purchases;
+using ERP.Domain.Entities.Sales;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERP.Infrastructure.DbContexts;
@@ -39,6 +41,20 @@ public partial class ErpDbContext : DbContext
     public virtual DbSet<InventoryLocation> InventoryLocations { get; set; }
 
     public virtual DbSet<StockMovement> StockMovements { get; set; }
+
+    public virtual DbSet<Supplier> Suppliers { get; set; }
+
+    public virtual DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+
+    public virtual DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
+
+    public virtual DbSet<FinancialTransaction> FinancialTransactions { get; set; }
+
+    public virtual DbSet<SalesOrder> SalesOrders { get; set; }
+
+    public virtual DbSet<SalesOrderItem> SalesOrderItems { get; set; }
+
+    public virtual DbSet<Invoice> Invoices { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -259,7 +275,7 @@ public partial class ErpDbContext : DbContext
             entity.HasIndex(e => e.AccountNumber, "UQ__FinanceAccounts__AccountNumber").IsUnique();
 
             entity.Property(e => e.Id)
-                .HasDefaultValueSql("(newid())")
+                .ValueGeneratedOnAdd()
                 .HasColumnName("Id");
             entity.Property(e => e.AccountName)
                 .HasMaxLength(255)
@@ -405,6 +421,229 @@ public partial class ErpDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict)
                   .HasConstraintName("FK_StockMovements_ToLocation");
           });
+
+        // Purchases Entities Configuration
+        modelBuilder.Entity<Supplier>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Suppliers__3213E83F");
+
+            entity.ToTable("Supplier");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.SupplierName)
+                .IsRequired()
+                .HasColumnName("SupplierName");
+            entity.Property(e => e.ContactEmail)
+                .IsRequired()
+                .HasColumnName("ContactEmail");
+            entity.Property(e => e.ContactPhone)
+                .HasColumnName("ContactPhone");
+            entity.Property(e => e.Address)
+                .HasColumnName("Address");
+        });
+
+        modelBuilder.Entity<PurchaseOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PurchaseOrders__3213E83F");
+
+            entity.ToTable("PurchaseOrder");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.OrderDate)
+                .IsRequired()
+                .HasColumnName("OrderDate");
+            entity.Property(e => e.SupplierId)
+                .IsRequired()
+                .HasColumnName("SupplierId");
+            entity.Property(e => e.TotalAmount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired()
+                .HasColumnName("TotalAmount");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasColumnName("Status");
+
+            entity.HasOne(d => d.Supplier)
+                .WithMany(p => p.PurchaseOrders)
+                .HasForeignKey(d => d.SupplierId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_PurchaseOrder_Supplier_SupplierId");
+        });
+
+        modelBuilder.Entity<PurchaseOrderItem>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PurchaseOrderItems__3213E83F");
+
+            entity.ToTable("PurchaseOrderItem");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.PurchaseOrderId)
+                .IsRequired()
+                .HasColumnName("PurchaseOrderId");
+            entity.Property(e => e.ProductId)
+                .IsRequired()
+                .HasColumnName("ProductId");
+            entity.Property(e => e.Quantity)
+                .IsRequired()
+                .HasColumnName("Quantity");
+            entity.Property(e => e.UnitPrice)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired()
+                .HasColumnName("UnitPrice");
+
+            entity.HasOne(d => d.Product)
+                .WithMany(p => p.PurchaseOrderItems)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_PurchaseOrderItem_Products_ProductId");
+
+            entity.HasOne(d => d.PurchaseOrder)
+                .WithMany(p => p.PurchaseOrderItems)
+                .HasForeignKey(d => d.PurchaseOrderId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_PurchaseOrderItem_PurchaseOrder_PurchaseOrderId");
+        });
+
+        // Finance Entities Configuration
+        modelBuilder.Entity<FinancialTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__FinancialTransactions__3213E83F");
+
+            entity.ToTable("FinancialTransaction");
+
+            entity.HasIndex(e => e.AccountId, "IX_FinancialTransaction_AccountId");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.TransactionType)
+                .IsRequired()
+                .HasColumnName("TransactionType");
+            entity.Property(e => e.Amount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired()
+                .HasColumnName("Amount");
+            entity.Property(e => e.TransactionDate)
+                .IsRequired()
+                .HasColumnName("TransactionDate");
+            entity.Property(e => e.Description)
+                .HasColumnName("Description");
+            entity.Property(e => e.AccountId)
+                .IsRequired()
+                .HasColumnName("AccountId");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("CreatedAt");
+
+            entity.HasOne(d => d.Account)
+                .WithMany(p => p.FinancialTransactions)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_FinancialTransaction_Accounts_AccountId");
+        });
+
+        // Sales Entities Configuration
+        modelBuilder.Entity<SalesOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__SalesOrders__3213E83F");
+
+            entity.ToTable("SalesOrder");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.OrderDate)
+                .IsRequired()
+                .HasColumnName("OrderDate");
+            entity.Property(e => e.CustomerId)
+                .IsRequired()
+                .HasColumnName("CustomerId");
+            entity.Property(e => e.TotalAmount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired()
+                .HasColumnName("TotalAmount");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasColumnName("Status");
+        });
+
+        modelBuilder.Entity<SalesOrderItem>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__SalesOrderItems__3213E83F");
+
+            entity.ToTable("SalesOrderItem");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.SalesOrderId)
+                .IsRequired()
+                .HasColumnName("SalesOrderId");
+            entity.Property(e => e.ProductId)
+                .IsRequired()
+                .HasColumnName("ProductId");
+            entity.Property(e => e.Quantity)
+                .IsRequired()
+                .HasColumnName("Quantity");
+            entity.Property(e => e.UnitPrice)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired()
+                .HasColumnName("UnitPrice");
+
+            entity.HasOne(d => d.Product)
+                .WithMany(p => p.SalesOrderItems)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_SalesOrderItem_Products_ProductId");
+
+            entity.HasOne(d => d.SalesOrder)
+                .WithMany(p => p.SalesOrderItems)
+                .HasForeignKey(d => d.SalesOrderId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_SalesOrderItem_SalesOrder_SalesOrderId");
+        });
+
+        modelBuilder.Entity<Invoice>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Invoices__3213E83F");
+
+            entity.ToTable("Invoice");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("Id");
+            entity.Property(e => e.InvoiceNumber)
+                .IsRequired()
+                .HasColumnName("InvoiceNumber");
+            entity.Property(e => e.InvoiceDate)
+                .IsRequired()
+                .HasColumnName("InvoiceDate");
+            entity.Property(e => e.DueDate)
+                .IsRequired()
+                .HasColumnName("DueDate");
+            entity.Property(e => e.SalesOrderId)
+                .HasColumnName("SalesOrderId");
+            entity.Property(e => e.CustomerId)
+                .IsRequired()
+                .HasColumnName("CustomerId");
+            entity.Property(e => e.TotalAmount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired()
+                .HasColumnName("TotalAmount");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasColumnName("Status");
+
+            entity.HasOne(d => d.Customer)
+                .WithMany()
+                .HasForeignKey(d => d.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Invoice_Users_CustomerId");
+
+            entity.HasOne(d => d.SalesOrder)
+                .WithMany(p => p.Invoices)
+                .HasForeignKey(d => d.SalesOrderId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Invoice_SalesOrder_SalesOrderId");
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }

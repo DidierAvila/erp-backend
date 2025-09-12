@@ -18,8 +18,11 @@ namespace ERP.Application.Core.Finance.Queries.FinancialTransactions
 
         public async Task<FinancialSummaryDto> HandleAsync(DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken)
         {
+            var startDateTime = startDate.ToDateTime(TimeOnly.MinValue);
+            var endDateTime = endDate.ToDateTime(TimeOnly.MaxValue);
+
             var transactions = await _transactionRepository.Finds(
-                x => x.TransactionDate >= startDate && x.TransactionDate <= endDate, 
+                x => x.TransactionDate >= startDateTime && x.TransactionDate <= endDateTime,
                 cancellationToken);
 
             var transactionsList = transactions?.ToList() ?? new List<FinancialTransaction>();

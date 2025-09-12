@@ -42,7 +42,7 @@ namespace ERP.Application.Core.Sales.Commands.SalesOrders
             // Create sales order
             var salesOrder = new SalesOrder
             {
-                OrderDate = DateOnly.FromDateTime(DateTime.Now),
+                OrderDate = DateTime.Now,
                 CustomerId = createSalesOrderDto.CustomerId,
                 Status = createSalesOrderDto.Status,
                 TotalAmount = totalAmount,

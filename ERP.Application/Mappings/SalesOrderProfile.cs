@@ -10,7 +10,6 @@ namespace ERP.Application.Mappings
         {
             // Entity to DTO mappings
             CreateMap<SalesOrder, SalesOrderDto>()
-                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : null))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.SalesOrderItems));
 
             // SalesOrderItem to SalesOrderItemDto mapping
@@ -23,7 +22,6 @@ namespace ERP.Application.Mappings
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // ID is auto-generated
                 .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(src => DateOnly.FromDateTime(DateTime.Now)))
                 .ForMember(dest => dest.TotalAmount, opt => opt.Ignore()) // Calculated in command
-                .ForMember(dest => dest.Customer, opt => opt.Ignore()) // Navigation property
                 .ForMember(dest => dest.Invoices, opt => opt.Ignore()) // Navigation property
                 .ForMember(dest => dest.SalesOrderItems, opt => opt.Ignore()); // Handled manually in command
 
@@ -36,7 +34,6 @@ namespace ERP.Application.Mappings
 
             // Summary DTO mapping
             CreateMap<SalesOrder, SalesOrderSummaryDto>()
-                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : "Unknown"))
                 .ForMember(dest => dest.ItemCount, opt => opt.MapFrom(src => src.SalesOrderItems != null ? src.SalesOrderItems.Count : 0));
         }
     }

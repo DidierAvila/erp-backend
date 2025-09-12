@@ -38,19 +38,19 @@ using ERP.Infrastructure.Services;
 namespace ERP.API.Extensions
 {
     /// <summary>
-    /// Clase estática que contiene métodos de extensión para configurar servicios en la API ERP.
+    /// Clase estï¿½tica que contiene mï¿½todos de extensiï¿½n para configurar servicios en la API ERP.
     /// </summary>
     public static class ExtencionServices
     {
         /// <summary>
         /// Configura los servicios necesarios para la API ERP.
         /// </summary>
-        /// <param name="services">La colección de servicios de la aplicación.</param>
-        /// <returns>La colección de servicios configurada.</returns>
+        /// <param name="services">La colecciï¿½n de servicios de la aplicaciï¿½n.</param>
+        /// <returns>La colecciï¿½n de servicios configurada.</returns>
         public static IServiceCollection AddApiErpExtention(this IServiceCollection services)
         {
             // AutoMapper
-            services.AddAutoMapper(typeof(UserProfile), typeof(UserTypesProfile), typeof(UserTypeProfile), typeof(PermissionProfile), typeof(AuthProfile), typeof(RoleProfile), typeof(RolePermissionProfile), typeof(ProductProfile), typeof(StockMovementProfile), typeof(FinancialTransactionProfile), typeof(AccountProfile), typeof(SupplierProfile), typeof(SalesOrderProfile));
+            services.AddAutoMapper(typeof(UserProfile), typeof(UserTypeProfile), typeof(PermissionProfile), typeof(AuthProfile), typeof(RoleProfile), typeof(RolePermissionProfile), typeof(ProductProfile), typeof(StockMovementProfile), typeof(FinancialTransactionProfile), typeof(AccountProfile), typeof(SupplierProfile), typeof(SalesOrderProfile));
 
             // Authentication Commands
             services.AddScoped<ILoginCommand, LoginCommand>();

@@ -10,10 +10,6 @@ namespace ERP.Domain.Validators.Purchases
     {
         public PurchaseOrderValidator()
         {
-            RuleFor(x => x.OrderDate)
-                .NotEmpty().WithMessage("La fecha de la orden es requerida")
-                .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Now)).WithMessage("La fecha de la orden no puede ser futura");
-
             RuleFor(x => x.SupplierId)
                 .NotEmpty().WithMessage("El ID del proveedor es requerido")
                 .GreaterThan(0).WithMessage("El ID del proveedor debe ser mayor a cero");

@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-
 namespace ERP.Domain.Entities.Purchases;
 
 public partial class PurchaseOrder
 {
     public int Id { get; set; }
 
-    public DateOnly OrderDate { get; set; }
+    public DateTime OrderDate { get; set; }
 
     public int SupplierId { get; set; }
 

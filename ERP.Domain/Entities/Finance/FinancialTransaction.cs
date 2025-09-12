@@ -8,7 +8,7 @@ public partial class FinancialTransaction
 
     public decimal Amount { get; set; }
 
-    public DateOnly TransactionDate { get; set; }
+    public DateTime TransactionDate { get; set; }
 
     public string? Description { get; set; }
 
