@@ -223,6 +223,9 @@ namespace ERP.API.Extensions
 
             // Services
             services.AddScoped<UserMeService>();
+            
+            // Registrar PermissionAuthorizationService
+            services.AddScoped<PermissionAuthorizationService>();
 
             return services;
         }

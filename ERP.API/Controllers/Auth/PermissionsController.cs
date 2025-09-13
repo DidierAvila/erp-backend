@@ -3,7 +3,9 @@ using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Application.Core.Auth.Queries.RolePermissions;
 using ERP.Domain.DTOs.Auth;
 using ERP.Domain.DTOs.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.API.Attributes;
 
 namespace ERP.API.Controllers.Auth
 {
@@ -12,6 +14,7 @@ namespace ERP.API.Controllers.Auth
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class PermissionsController : ControllerBase
     {
         private readonly IPermissionCommandHandler _commandHandler;
@@ -38,6 +41,7 @@ namespace ERP.API.Controllers.Auth
         /// Create a new Permission
         /// </summary>
         [HttpPost]
+        [RequirePermission("permissions.create")]
         public async Task<ActionResult<PermissionDto>> CreatePermission([FromBody] CreatePermissionDto command, CancellationToken cancellationToken)
         {
             try
@@ -55,6 +59,7 @@ namespace ERP.API.Controllers.Auth
         /// Update an existing Permission
         /// </summary>
         [HttpPut("{id}")]
+        [RequirePermission("permissions.update")]
         public async Task<ActionResult<PermissionDto>> UpdatePermission(Guid id, [FromBody] UpdatePermissionDto command, CancellationToken cancellationToken)
         {
             try
@@ -76,6 +81,7 @@ namespace ERP.API.Controllers.Auth
         /// Delete a Permission
         /// </summary>
         [HttpDelete("{id}")]
+        [RequirePermission("permissions.delete")]
         public async Task<ActionResult<bool>> DeletePermission(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -97,6 +103,7 @@ namespace ERP.API.Controllers.Auth
         /// Get Permission by ID
         /// </summary>
         [HttpGet("{id}")]
+        [RequirePermission("permissions.read")]
         public async Task<ActionResult<PermissionDto>> GetPermissionById(Guid id, CancellationToken cancellationToken)
         {
             var permission = await _queryHandler.GetPermissionById(id, cancellationToken);
@@ -119,6 +126,7 @@ namespace ERP.API.Controllers.Auth
         /// GET /api/permissions?page=1&amp;pageSize=10&amp;name=read&amp;status=true&amp;sortBy=name
         /// </remarks>
         [HttpGet]
+        [RequirePermission("permissions.read")]
         public async Task<ActionResult<PaginationResponseDto<PermissionListResponseDto>>> GetAllPermissions(
             [FromQuery] PermissionFilterDto filter,
             CancellationToken cancellationToken)
@@ -142,6 +150,7 @@ namespace ERP.API.Controllers.Auth
         /// Get all Permissions (simple list without pagination)
         /// </summary>
         [HttpGet("simple")]
+        [RequirePermission("permissions.read")]
         public async Task<ActionResult<IEnumerable<PermissionDto>>> GetAllPermissionsSimple(CancellationToken cancellationToken)
         {
             var permissions = await _queryHandler.GetAllPermissions(cancellationToken);
@@ -152,6 +161,7 @@ namespace ERP.API.Controllers.Auth
         /// Get active Permissions only
         /// </summary>
         [HttpGet("active")]
+        [RequirePermission("permissions.read")]
         public async Task<ActionResult<IEnumerable<PermissionDto>>> GetActivePermissions(CancellationToken cancellationToken)
         {
             var permissions = await _queryHandler.GetActivePermissions(cancellationToken);
@@ -177,6 +187,7 @@ namespace ERP.API.Controllers.Auth
         /// ]
         /// </remarks>
         [HttpGet("dropdown")]
+        [RequirePermission("permissions.read")]
         [ProducesResponseType(typeof(IEnumerable<PermissionDropdownDto>), 200)]
         [ProducesResponseType(500)]
         public async Task<ActionResult<IEnumerable<PermissionDropdownDto>>> GetPermissionsForDropdown(CancellationToken cancellationToken)
@@ -196,6 +207,7 @@ namespace ERP.API.Controllers.Auth
         /// Get Permissions summary with role count
         /// </summary>
         [HttpGet("summary")]
+        [RequirePermission("permissions.read")]
         public async Task<ActionResult<IEnumerable<PermissionSummaryDto>>> GetPermissionsSummary(CancellationToken cancellationToken)
         {
             var permissions = await _queryHandler.GetPermissionsSummary(cancellationToken);
@@ -206,6 +218,7 @@ namespace ERP.API.Controllers.Auth
         /// Obtener todos los roles que tienen un permiso específico
         /// </summary>
         [HttpGet("{permissionId}/roles")]
+        [RequirePermission("permissions.read")]
         public async Task<ActionResult<IEnumerable<RolePermissionDto>>> GetPermissionRoles(Guid permissionId, CancellationToken cancellationToken)
         {
             try

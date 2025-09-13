@@ -20,6 +20,9 @@ namespace ERP.Infrastructure.Migrations
                     // Super Admin - Super Administrador
                     { new Guid("10000000-0000-0000-0000-000000000001"), new Guid("AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA") },
                     
+                    // Super Admin - Super Administrador
+                    { new Guid("10000000-0000-0000-0000-000000000001"), new Guid("BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB") },
+
                     // Juan Pérez (Gerente) - Gerente General
                     { new Guid("10000000-0000-0000-0000-000000000002"), new Guid("CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC") },
                     

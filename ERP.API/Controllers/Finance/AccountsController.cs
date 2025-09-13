@@ -1,7 +1,9 @@
 using ERP.Application.Core.Finance.Commands.Handlers;
 using ERP.Application.Core.Finance.Queries.Handlers;
 using ERP.Domain.DTOs.Finance;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.API.Attributes;
 
 namespace ERP.API.Controllers.Finance
 {
@@ -10,6 +12,7 @@ namespace ERP.API.Controllers.Finance
     /// </summary>
     [ApiController]
     [Route("api/finance/[controller]")]
+    [Authorize]
     public class AccountsController : ControllerBase
     {
         private readonly ILogger<AccountsController> _logger;
@@ -36,6 +39,7 @@ namespace ERP.API.Controllers.Finance
         /// Obtiene todas las cuentas
         /// </summary>
         [HttpGet]
+        [RequirePermission("accounts.read")]
         public async Task<ActionResult<IEnumerable<AccountDto>>> GetAll(CancellationToken cancellationToken)
         {
             try
@@ -54,6 +58,7 @@ namespace ERP.API.Controllers.Finance
         /// Obtiene una cuenta por ID
         /// </summary>
         [HttpGet("{id}")]
+        [RequirePermission("accounts.read")]
         public async Task<ActionResult<AccountDto>> GetById(int id, CancellationToken cancellationToken)
         {
             try
@@ -75,6 +80,7 @@ namespace ERP.API.Controllers.Finance
         /// Crea una nueva cuenta
         /// </summary>
         [HttpPost]
+        [RequirePermission("accounts.create")]
         public async Task<ActionResult<AccountDto>> Create([FromBody] CreateAccountDto createDto, CancellationToken cancellationToken)
         {
             try
@@ -101,6 +107,7 @@ namespace ERP.API.Controllers.Finance
         /// Actualiza una cuenta existente
         /// </summary>
         [HttpPut("{id}")]
+        [RequirePermission("accounts.update")]
         public async Task<ActionResult<AccountDto>> Update(int id, [FromBody] UpdateAccountDto updateDto, CancellationToken cancellationToken)
         {
             try
@@ -131,6 +138,7 @@ namespace ERP.API.Controllers.Finance
         /// Elimina una cuenta
         /// </summary>
         [HttpDelete("{id}")]
+        [RequirePermission("accounts.delete")]
         public async Task<ActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             try
@@ -160,6 +168,7 @@ namespace ERP.API.Controllers.Finance
         /// Obtiene cuentas por tipo
         /// </summary>
         [HttpGet("by-type/{accountType}")]
+        [RequirePermission("accounts.read")]
         public async Task<ActionResult<IEnumerable<AccountDto>>> GetByType(string accountType, CancellationToken cancellationToken)
         {
             try
@@ -182,6 +191,7 @@ namespace ERP.API.Controllers.Finance
         /// Obtiene solo las cuentas activas (resumen)
         /// </summary>
         [HttpGet("active")]
+        [RequirePermission("accounts.read")]
         public async Task<ActionResult<IEnumerable<AccountSummaryDto>>> GetActive(CancellationToken cancellationToken)
         {
             try

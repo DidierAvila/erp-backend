@@ -1,7 +1,9 @@
 using ERP.Application.Core.Purchases.Commands.Handlers;
 using ERP.Application.Core.Purchases.Queries.Handlers;
 using ERP.Domain.DTOs.Purchases;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.API.Attributes;
 
 namespace ERP.API.Controllers.Purchases
 {
@@ -10,6 +12,7 @@ namespace ERP.API.Controllers.Purchases
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SuppliersController : ControllerBase
     {
         private readonly ISupplierCommandHandler _commandHandler;
@@ -38,6 +41,7 @@ namespace ERP.API.Controllers.Purchases
         /// <param name="createSupplierDto"></param>
         /// <returns></returns>
         [HttpPost]
+        [RequirePermission("suppliers.create")]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<SupplierDto>> CreateSupplier([FromBody] CreateSupplierDto createSupplierDto)
@@ -71,6 +75,7 @@ namespace ERP.API.Controllers.Purchases
         /// <param name="updateSupplierDto"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
+        [RequirePermission("suppliers.update")]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -109,6 +114,7 @@ namespace ERP.API.Controllers.Purchases
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
+        [RequirePermission("suppliers.delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -143,6 +149,7 @@ namespace ERP.API.Controllers.Purchases
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [RequirePermission("suppliers.read")]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<SupplierDto>> GetSupplierById(int id)
@@ -170,6 +177,7 @@ namespace ERP.API.Controllers.Purchases
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [RequirePermission("suppliers.read")]
         [ProducesResponseType(typeof(IEnumerable<SupplierDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SupplierDto>>> GetAllSuppliers()
         {
@@ -191,6 +199,7 @@ namespace ERP.API.Controllers.Purchases
         /// <param name="name"></param>
         /// <returns></returns>
         [HttpGet("search")]
+        [RequirePermission("suppliers.read")]
         [ProducesResponseType(typeof(IEnumerable<SupplierDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SupplierDto>>> GetSuppliersByName([FromQuery] string? name)
         {

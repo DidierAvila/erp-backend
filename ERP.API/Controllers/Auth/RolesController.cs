@@ -4,7 +4,9 @@ using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Application.Core.Auth.Queries.RolePermissions;
 using ERP.Domain.DTOs.Auth;
 using ERP.Domain.DTOs.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.API.Attributes;
 
 namespace ERP.API.Controllers.Auth
 {
@@ -19,6 +21,7 @@ namespace ERP.API.Controllers.Auth
     /// <param name="removePermissionFromRole"></param>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RolesController(
         IRoleCommandHandler roleCommandHandler,
         IRoleQueryHandler roleQueryHandler,
@@ -47,6 +50,7 @@ namespace ERP.API.Controllers.Auth
         /// GET /api/roles?page=1&amp;pageSize=10&amp;name=admin&amp;status=true&amp;sortBy=name
         /// </remarks>
         [HttpGet]
+        [RequirePermission("roles.read")]
         public async Task<ActionResult<PaginationResponseDto<RoleListResponseDto>>> GetAllRoles(
             [FromQuery] RoleFilterDto filter,
             CancellationToken cancellationToken)
@@ -70,6 +74,7 @@ namespace ERP.API.Controllers.Auth
         /// Get all Roles (simple list without pagination)
         /// </summary>
         [HttpGet("simple")]
+        [RequirePermission("roles.read")]
         public async Task<ActionResult<IEnumerable<RoleDto>>> GetAllRolesSimple(CancellationToken cancellationToken)
         {
             try
@@ -104,6 +109,7 @@ namespace ERP.API.Controllers.Auth
         /// ]
         /// </remarks>
         [HttpGet("dropdown")]
+        [RequirePermission("roles.read")]
         public async Task<ActionResult<IEnumerable<RoleDropdownDto>>> GetRolesDropdown(CancellationToken cancellationToken)
         {
             try
@@ -124,6 +130,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Rol con sus permisos asociados</returns>
         [HttpGet("{id}")]
+        [RequirePermission("roles.read")]
         public async Task<ActionResult<RoleDto>> GetRoleById(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -159,6 +166,7 @@ namespace ERP.API.Controllers.Auth
         /// Los permisos se pueden asignar posteriormente usando los endpoints de gestión de permisos.
         /// </remarks>
         [HttpPost]
+        [RequirePermission("roles.create")]
         public async Task<ActionResult<RoleDto>> CreateRole([FromBody] CreateRoleDto createRoleDto, CancellationToken cancellationToken)
         {
             try
@@ -209,6 +217,7 @@ namespace ERP.API.Controllers.Auth
         /// }
         /// </remarks>
         [HttpPut("{id}")]
+        [RequirePermission("roles.update")]
         public async Task<ActionResult<RoleDto>> UpdateRole(Guid id, [FromBody] UpdateRoleDto updateRoleDto, CancellationToken cancellationToken)
         {
             try
@@ -237,6 +246,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
+        [RequirePermission("roles.delete")]
         public async Task<ActionResult> DeleteRole(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -259,6 +269,7 @@ namespace ERP.API.Controllers.Auth
         /// Obtener todos los permisos asignados a un rol específico
         /// </summary>
         [HttpGet("{roleId}/permissions")]
+        [RequirePermission("roles.read")]
         public async Task<ActionResult<IEnumerable<RolePermissionDto>>> GetRolePermissions(Guid roleId, CancellationToken cancellationToken)
         {
             try
@@ -281,6 +292,7 @@ namespace ERP.API.Controllers.Auth
         /// Asignar un permiso específico a un rol
         /// </summary>
         [HttpPost("{roleId}/permissions/{permissionId}")]
+        [RequirePermission("roles.manage")]
         public async Task<ActionResult<RolePermissionDto>> AssignPermissionToRole(Guid roleId, Guid permissionId, CancellationToken cancellationToken)
         {
             try
@@ -313,6 +325,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Resultado detallado de la asignación múltiple</returns>
         [HttpPost("{roleId}/permissions/bulk")]
+        [RequirePermission("roles.manage")]
         public async Task<ActionResult<MultiplePermissionAssignmentResult>> AssignMultiplePermissionsToRole(
             Guid roleId, 
             [FromBody] List<Guid> permissionIds, 
@@ -358,6 +371,7 @@ namespace ERP.API.Controllers.Auth
         /// Remover un permiso específico de un rol
         /// </summary>
         [HttpDelete("{roleId}/permissions/{permissionId}")]
+        [RequirePermission("roles.manage")]
         public async Task<ActionResult<bool>> RemovePermissionFromRole(Guid roleId, Guid permissionId, CancellationToken cancellationToken)
         {
             try
@@ -383,6 +397,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Resultado de la remoción múltiple</returns>
         [HttpDelete("{roleId}/permissions")]
+        [RequirePermission("roles.manage")]
         public async Task<ActionResult<MultiplePermissionRemovalResult>> RemoveMultiplePermissionsFromRole(
             Guid roleId,
             [FromBody] List<Guid> permissionIds,

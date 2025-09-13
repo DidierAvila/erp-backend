@@ -2,7 +2,9 @@ using ERP.Application.Core.Inventory.Commands.Handlers;
 using ERP.Application.Core.Inventory.Queries.Handlers;
 using ERP.Domain.DTOs.Common;
 using ERP.Domain.DTOs.Inventory;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.API.Attributes;
 
 namespace ERP.API.Controllers.Inventory
 {
@@ -11,6 +13,7 @@ namespace ERP.API.Controllers.Inventory
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IProductCommandHandler _productCommandHandler;
@@ -41,6 +44,7 @@ namespace ERP.API.Controllers.Inventory
         /// GET /api/Products?productName=mouse&amp;minCurrentStock=5&amp;isLowStock=true
         /// </remarks>
         [HttpGet]
+        [RequirePermission("products.read")]
         public async Task<ActionResult<PaginationResponseDto<ProductDto>>> GetAllProducts(
             [FromQuery] ProductFilterDto filter,
             CancellationToken cancellationToken = default)
@@ -97,6 +101,7 @@ namespace ERP.API.Controllers.Inventory
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [RequirePermission("products.read")]
         public async Task<ActionResult<ProductDto>> GetProductById(int id, CancellationToken cancellationToken)
         {
             try
@@ -120,6 +125,7 @@ namespace ERP.API.Controllers.Inventory
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("by-sku/{sku}")]
+        [RequirePermission("products.read")]
         public async Task<ActionResult<ProductDto>> GetProductBySku(string sku, CancellationToken cancellationToken)
         {
             try
@@ -142,6 +148,7 @@ namespace ERP.API.Controllers.Inventory
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("low-stock")]
+        [RequirePermission("products.read")]
         public async Task<ActionResult<IEnumerable<ProductStockDto>>> GetLowStockProducts(CancellationToken cancellationToken)
         {
             try
@@ -163,6 +170,7 @@ namespace ERP.API.Controllers.Inventory
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
+        [RequirePermission("products.create")]
         public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] CreateProductDto createProductDto, CancellationToken cancellationToken)
         {
             try
@@ -192,6 +200,7 @@ namespace ERP.API.Controllers.Inventory
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
+        [RequirePermission("products.update")]
         public async Task<ActionResult<ProductDto>> UpdateProduct(int id, [FromBody] UpdateProductDto updateProductDto, CancellationToken cancellationToken)
         {
             try
@@ -220,6 +229,7 @@ namespace ERP.API.Controllers.Inventory
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
+        [RequirePermission("products.delete")]
         public async Task<ActionResult> DeleteProduct(int id, CancellationToken cancellationToken)
         {
             try

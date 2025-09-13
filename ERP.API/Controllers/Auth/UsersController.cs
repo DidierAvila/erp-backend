@@ -3,7 +3,9 @@ using ERP.Application.Core.Auth.Commands.Users;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Domain.DTOs.Auth;
 using ERP.Domain.DTOs.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.API.Attributes;
 
 namespace ERP.API.Controllers.Auth
 {
@@ -12,6 +14,7 @@ namespace ERP.API.Controllers.Auth
     /// </summary>
     [ApiController]
     [Route("api/auth/[controller]")]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly ILogger<UsersController> _logger;
@@ -44,6 +47,7 @@ namespace ERP.API.Controllers.Auth
         /// GET /api/users?page=1&amp;pageSize=10&amp;search=juan&amp;sortBy=name
         /// </remarks>
         [HttpGet]
+        [RequirePermission("users.read")]
         public async Task<ActionResult<PaginationResponseDto<UserListResponseDto>>> GetAll(
             [FromQuery] UserFilterDto filter, 
             CancellationToken cancellationToken)
@@ -92,6 +96,7 @@ namespace ERP.API.Controllers.Auth
         /// }
         /// </remarks>
         [HttpGet("{id}")]
+        [RequirePermission("users.read")]
         public async Task<ActionResult<UserDto>> GetById(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -129,6 +134,7 @@ namespace ERP.API.Controllers.Auth
         /// Los roles se pueden asignar posteriormente usando los endpoints de gestión de roles.
         /// </remarks>
         [HttpPost]
+        [RequirePermission("users.create")]
         public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto createDto, CancellationToken cancellationToken)
         {
             try
@@ -181,6 +187,7 @@ namespace ERP.API.Controllers.Auth
         /// }
         /// </remarks>
         [HttpPut("{id}")]
+        [RequirePermission("users.update")]
         public async Task<ActionResult<UserDto>> Update(Guid id, [FromBody] UpdateUserDto updateDto, CancellationToken cancellationToken)
         {
             try
@@ -210,6 +217,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
+        [RequirePermission("users.delete")]
         public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -239,6 +247,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut("{id}/change-password")]
+        [RequirePermission("users.update")]
         public async Task<ActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordDto changePasswordDto, CancellationToken cancellationToken)
         {
             try
@@ -272,6 +281,7 @@ namespace ERP.API.Controllers.Auth
         /// Establece un valor en los datos adicionales del usuario
         /// </summary>
         [HttpPut("{id}/additional-data/{key}")]
+        [RequirePermission("users.update")]
         public async Task<ActionResult<UserAdditionalValueResponseDto>> SetAdditionalValue(
             Guid id, 
             string key, 
@@ -299,6 +309,7 @@ namespace ERP.API.Controllers.Auth
         /// Obtiene un valor específico de los datos adicionales del usuario
         /// </summary>
         [HttpGet("{id}/additional-data/{key}")]
+        [RequirePermission("users.read")]
         public async Task<ActionResult<UserAdditionalValueResponseDto>> GetAdditionalValue(
             Guid id, 
             string key, 
@@ -324,6 +335,7 @@ namespace ERP.API.Controllers.Auth
         /// Elimina un valor de los datos adicionales del usuario
         /// </summary>
         [HttpDelete("{id}/additional-data/{key}")]
+        [RequirePermission("users.update")]
         public async Task<ActionResult<bool>> RemoveAdditionalValue(
             Guid id, 
             string key, 
@@ -349,6 +361,7 @@ namespace ERP.API.Controllers.Auth
         /// Actualiza todos los datos adicionales del usuario
         /// </summary>
         [HttpPut("{id}/additional-data")]
+        [RequirePermission("users.update")]
         public async Task<ActionResult<Dictionary<string, object>>> UpdateAdditionalData(
             Guid id, 
             [FromBody] UpdateUserAdditionalDataDto updateDto, 
@@ -381,6 +394,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Lista de roles del usuario</returns>
         [HttpGet("{id}/roles")]
+        [RequirePermission("users.read")]
         public async Task<ActionResult<List<UserRoleDto>>> GetUserRoles(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -403,6 +417,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Resultado de la asignación múltiple</returns>
         [HttpPost("{id}/roles")]
+        [RequirePermission("users.manage")]
         public async Task<ActionResult<MultipleRoleAssignmentResult>> AssignRolesToUser(
             Guid id, 
             [FromBody] List<Guid> roleIds, 
@@ -446,6 +461,7 @@ namespace ERP.API.Controllers.Auth
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Resultado de la remoción múltiple</returns>
         [HttpDelete("{id}/roles")]
+        [RequirePermission("users.manage")]
         public async Task<ActionResult<MultipleRoleRemovalResult>> RemoveRolesFromUser(
             Guid id, 
             [FromBody] List<Guid> roleIds, 

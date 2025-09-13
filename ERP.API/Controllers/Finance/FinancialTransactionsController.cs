@@ -1,7 +1,9 @@
 using ERP.Application.Core.Finance.Commands.Handlers;
 using ERP.Application.Core.Finance.Queries.Handlers;
 using ERP.Domain.DTOs.Finance;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.API.Attributes;
 
 namespace ERP.API.Controllers.Finance
 {
@@ -10,6 +12,7 @@ namespace ERP.API.Controllers.Finance
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FinancialTransactionsController : ControllerBase
     {
         private readonly IFinancialTransactionCommandHandler _commandHandler;
@@ -34,6 +37,7 @@ namespace ERP.API.Controllers.Finance
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet]
+        [RequirePermission("financial_transactions.read")]
         public async Task<ActionResult<IEnumerable<FinancialTransactionDto>>> GetAllTransactions(CancellationToken cancellationToken)
         {
             try
@@ -48,12 +52,13 @@ namespace ERP.API.Controllers.Finance
         }
 
         /// <summary>
-        /// Obtiene una transacción financiera por ID
+        /// Obtiene una transacciÃ³n financiera por ID
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [RequirePermission("financial_transactions.read")]
         public async Task<ActionResult<FinancialTransactionDto>> GetTransactionById(int id, CancellationToken cancellationToken)
         {
             try
@@ -72,12 +77,13 @@ namespace ERP.API.Controllers.Finance
 
 
         /// <summary>
-        /// Obtiene una transacción financiera por tipo
+        /// Obtiene una transacciÃ³n financiera por tipo
         /// </summary>
         /// <param name="type"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("by-type/{type}")]
+        [RequirePermission("financial_transactions.read")]
         public async Task<ActionResult<IEnumerable<FinancialTransactionDto>>> GetTransactionsByType(string type, CancellationToken cancellationToken)
         {
             try
@@ -92,12 +98,13 @@ namespace ERP.API.Controllers.Finance
         }
 
         /// <summary>
-        /// Crea una nueva transacción financiera
+        /// Crea una nueva transacciÃ³n financiera
         /// </summary>
         /// <param name="createDto"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
+        [RequirePermission("financial_transactions.create")]
         public async Task<ActionResult<FinancialTransactionDto>> CreateTransaction([FromBody] CreateFinancialTransactionDto createDto, CancellationToken cancellationToken)
         {
             try
@@ -116,13 +123,14 @@ namespace ERP.API.Controllers.Finance
         }
 
         /// <summary>
-        /// Actualiza una transacción financiera existente
+        /// Actualiza una transacciï¿½n financiera existente
         /// </summary>
         /// <param name="id"></param>
         /// <param name="updateDto"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
+        [RequirePermission("financial_transactions.update")]
         public async Task<ActionResult<FinancialTransactionDto>> UpdateTransaction(int id, [FromBody] UpdateFinancialTransactionDto updateDto, CancellationToken cancellationToken)
         {
             try
@@ -145,12 +153,13 @@ namespace ERP.API.Controllers.Finance
         }
 
         /// <summary>
-        /// Elimina una transacción financiera por ID
+        /// Elimina una transacciï¿½n financiera por ID
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
+        [RequirePermission("financial_transactions.delete")]
         public async Task<ActionResult> DeleteTransaction(int id, CancellationToken cancellationToken)
         {
             try

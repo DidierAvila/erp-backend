@@ -2,7 +2,9 @@ using ERP.Application.Core.Auth.Commands.Handlers;
 using ERP.Application.Core.Auth.Queries.Handlers;
 using ERP.Domain.DTOs.Auth;
 using ERP.Domain.DTOs.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ERP.API.Attributes;
 
 namespace ERP.API.Controllers.Auth
 {
@@ -11,6 +13,7 @@ namespace ERP.API.Controllers.Auth
     /// </summary>
     [ApiController]
     [Route("api/auth/[controller]")]
+    [Authorize]
     public class UserTypesController : ControllerBase
     {
         private readonly IUserTypeCommandHandler _commandHandler;
@@ -37,6 +40,7 @@ namespace ERP.API.Controllers.Auth
         /// Create a new UserType
         /// </summary>
         [HttpPost]
+        [RequirePermission("user_types.create")]
         public async Task<ActionResult<UserTypeDto>> CreateUserType([FromBody] CreateUserTypeDto command, CancellationToken cancellationToken)
         {
             try
@@ -54,6 +58,7 @@ namespace ERP.API.Controllers.Auth
         /// Update an existing UserType
         /// </summary>
         [HttpPut("{id}")]
+        [RequirePermission("user_types.update")]
         public async Task<ActionResult<UserTypeDto>> UpdateUserType(Guid id, [FromBody] UpdateUserTypeDto command, CancellationToken cancellationToken)
         {
             try
@@ -75,6 +80,7 @@ namespace ERP.API.Controllers.Auth
         /// Delete a UserType
         /// </summary>
         [HttpDelete("{id}")]
+        [RequirePermission("user_types.delete")]
         public async Task<ActionResult<bool>> DeleteUserType(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -96,6 +102,7 @@ namespace ERP.API.Controllers.Auth
         /// Get UserType by ID
         /// </summary>
         [HttpGet("{id}")]
+        [RequirePermission("user_types.read")]
         public async Task<ActionResult<UserTypeDto>> GetUserTypeById(Guid id, CancellationToken cancellationToken)
         {
             var userType = await _queryHandler.GetUserTypeById(id, cancellationToken);
@@ -118,6 +125,7 @@ namespace ERP.API.Controllers.Auth
         /// GET /api/usertypes?page=1&amp;pageSize=10&amp;name=admin&amp;status=true&amp;sortBy=name
         /// </remarks>
         [HttpGet]
+        [RequirePermission("user_types.read")]
         public async Task<ActionResult<PaginationResponseDto<UserTypeListResponseDto>>> GetAllUserTypes(
             [FromQuery] UserTypeFilterDto filter,
             CancellationToken cancellationToken)
@@ -142,6 +150,7 @@ namespace ERP.API.Controllers.Auth
         /// Get all UserTypes (simple list without pagination)
         /// </summary>
         [HttpGet("simple")]
+        [RequirePermission("user_types.read")]
         public async Task<ActionResult<IEnumerable<UserTypeDto>>> GetAllUserTypesSimple(CancellationToken cancellationToken)
         {
             var userTypes = await _queryHandler.GetAllUserTypes(cancellationToken);
@@ -152,6 +161,7 @@ namespace ERP.API.Controllers.Auth
         /// Get active UserTypes only
         /// </summary>
         [HttpGet("active")]
+        [RequirePermission("user_types.read")]
         public async Task<ActionResult<IEnumerable<UserTypeDto>>> GetActiveUserTypes(CancellationToken cancellationToken)
         {
             var userTypes = await _queryHandler.GetActiveUserTypes(cancellationToken);
@@ -162,6 +172,7 @@ namespace ERP.API.Controllers.Auth
         /// Get UserTypes summary with user count
         /// </summary>
         [HttpGet("summary")]
+        [RequirePermission("user_types.read")]
         public async Task<ActionResult<IEnumerable<UserTypeSummaryDto>>> GetUserTypesSummary(CancellationToken cancellationToken)
         {
             var userTypes = await _queryHandler.GetUserTypesSummary(cancellationToken);
@@ -189,6 +200,7 @@ namespace ERP.API.Controllers.Auth
         /// ]
         /// </remarks>
         [HttpGet("dropdown")]
+        [RequirePermission("user_types.read")]
         public async Task<ActionResult<IEnumerable<UserTypeDropdownDto>>> GetUserTypesDropdown(CancellationToken cancellationToken)
         {
             var userTypes = await _queryHandler.GetUserTypesForDropdown(cancellationToken);
